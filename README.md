@@ -63,10 +63,10 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 # Via Claude Code plugin marketplace
 /plugin marketplace add sumitroajiprabowo/sdlc-kit
-/plugin install agent-sdlc@agent-sdlc
+/plugin install sdlc-kit@sdlc-kit
 ```
 
-> **Naming:** the project is **sdlc-kit** (npm package, command, and GitHub repo). Some internal identifiers keep the earlier name `agent-sdlc` for compatibility: the Claude plugin and marketplace name above, the `~/.agent-sdlc/` manifest directory, and the statusline and backup file names.
+> Formerly `agent-sdlc`. Installs made with 0.1.0 are migrated automatically the next time you run `sdlc-kit`. If you installed the Claude plugin, reinstall it under the new name.
 
 ---
 
@@ -79,7 +79,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | `--antigravity` | Install skills into `~/.agents/skills/` |
 | `--cursor` | Install skills into `~/.cursor/skills/` and commands into `~/.cursor/commands/` |
 | `--opencode` | Install skills into `~/.config/opencode/skills/` and `~/.agents/skills/`, commands into `~/.config/opencode/command/` |
-| `--local` | Install a compact prompt (`<800` tokens) to `~/.agent-sdlc/LOCAL_PROMPT.md` |
+| `--local` | Install a compact prompt (`<800` tokens) to `~/.sdlc-kit/LOCAL_PROMPT.md` |
 | `--project` | Scaffold non-destructive project templates (`docs/`, PR template, `AGENTS.md`, `CLAUDE.md -> @AGENTS.md`, `.gitignore`) |
 | `--all` | Install across `claude`, `codex`, `antigravity`, `cursor`, `opencode`, and `local` |
 | `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (the original `.bak` is never overwritten), then adds only the keys you haven't set: `opusplan` model, 200k context cap, tool search, auto-compact at 70%, bounded outputs, and a context statusline. Run `--claude --uninstall` to revert just those keys |
@@ -87,7 +87,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | `--no-orchestrator` | Skip installing `sdlc-orchestrator` (single-agent workflow only) |
 | `--dry-run` | Preview actions without writing any files |
 | `--force` | Overwrite or remove files even if they were not installed (or were edited after install) |
-| `--uninstall` | Remove only files `agent-sdlc` installed and you haven't edited; reverts the settings `--optimize` added |
+| `--uninstall` | Remove only files `sdlc-kit` installed and you haven't edited; reverts the settings `--optimize` added |
 
 ---
 
@@ -109,7 +109,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 - **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
 - **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
 - **OpenCode**: Skills in `~/.config/opencode/skills/` and `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/command/`.
-- **Local LLMs**: Load `~/.agent-sdlc/LOCAL_PROMPT.md` as your system prompt or project instruction.
+- **Local LLMs**: Load `~/.sdlc-kit/LOCAL_PROMPT.md` as your system prompt or project instruction.
 
 ---
 
@@ -138,14 +138,14 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | `--antigravity` | `~/.agents/skills/` | none |
 | `--cursor` | `~/.cursor/skills/` | `~/.cursor/commands/` |
 | `--opencode` | `~/.config/opencode/skills/`, `~/.agents/skills/` | `~/.config/opencode/command/` |
-| `--local` | `~/.agent-sdlc/LOCAL_PROMPT.md` | none |
+| `--local` | `~/.sdlc-kit/LOCAL_PROMPT.md` | none |
 
-Every installed file is recorded with a hash in `~/.agent-sdlc/manifest.json`. The installer skips files it didn't create, and `--uninstall` removes only files that are unchanged since install.
+Every installed file is recorded with a hash in `~/.sdlc-kit/manifest.json`. The installer skips files it didn't create, and `--uninstall` removes only files that are unchanged since install.
 
 ## Troubleshooting
 
-- **"Skipped ... not installed by agent-sdlc"**: a file with that name already exists (e.g. your own `review.md`). Keep it, rename ours, or pass `--force` to overwrite.
-- **Slash command name clashes** (`/review`, `/ship`, `/qa` vs. built-ins or other plugins): installed commands never overwrite existing files. If a clash remains, rename the installed `.md` file; plugin installs are namespaced (`/agent-sdlc:review`).
+- **"Skipped ... not installed by sdlc-kit"**: a file with that name already exists (e.g. your own `review.md`). Keep it, rename ours, or pass `--force` to overwrite.
+- **Slash command name clashes** (`/review`, `/ship`, `/qa` vs. built-ins or other plugins): installed commands never overwrite existing files. If a clash remains, rename the installed `.md` file; plugin installs are namespaced (`/sdlc-kit:review`).
 - **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx sdlc-kit --claude --uninstall`.
 - **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
 - **Windows, macOS, Linux**: all three are tested in CI on Node 20 and 22. The installer and the `--optimize` statusline need only Node.js (no `bash` or `jq`). Paths use your home directory (`%USERPROFILE%` on Windows). The Cursor and OpenCode directories are unverified on Windows.

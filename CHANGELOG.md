@@ -13,6 +13,7 @@ First release published from CI via npm trusted publishing (OIDC, with provenanc
 
 ### Changed
 - GitHub repository renamed from `agent-sdlc` to `sdlc-kit`; the old URL redirects. README now documents `npx sdlc-kit` as the primary install.
+- Remaining `agent-sdlc` identifiers renamed to `sdlc-kit`: the Claude plugin and marketplace name (reinstall the plugin with `/plugin install sdlc-kit@sdlc-kit`), the `~/.sdlc-kit/` manifest and local prompt directory, `sdlc-kit-statusline.mjs`, and `settings.json.sdlc-kit.bak`. Installs made with 0.1.0 are migrated on the next run, and `--uninstall` and `--doctor` still recognize the old names.
 
 ### Added
 - Manifest (`~/.agent-sdlc/manifest.json`) tracking installed files; `--force` flag.

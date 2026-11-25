@@ -29,17 +29,17 @@ test('parseArgs handles single targets, flags, and rejects unknown flags', () =>
 });
 
 test('detectTargets discovers existing agent dirs and falls back to antigravity', () => {
-  const emptyHome = makeTempDir('agent-sdlc-empty-');
+  const emptyHome = makeTempDir('sdlc-kit-empty-');
   assert.deepEqual(detectTargets(emptyHome), ['antigravity']);
 
-  const claudeCodexHome = makeTempDir('agent-sdlc-cc-');
+  const claudeCodexHome = makeTempDir('sdlc-kit-cc-');
   fs.mkdirSync(path.join(claudeCodexHome, '.claude'));
   fs.mkdirSync(path.join(claudeCodexHome, '.codex'));
   assert.deepEqual(detectTargets(claudeCodexHome), ['claude', 'codex']);
 });
 
 test('--claude installs 2 skills + 9 commands, and --no-orchestrator skips orchestrator', () => {
-  const home = makeTempDir('agent-sdlc-claude-');
+  const home = makeTempDir('sdlc-kit-claude-');
   const res = runInstall({ targets: ['claude'], homeDir: home });
   assert.equal(res.warnings.length, 0);
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/SKILL.md')));
@@ -56,14 +56,14 @@ test('--claude installs 2 skills + 9 commands, and --no-orchestrator skips orche
     assert.ok(fs.existsSync(path.join(home, '.claude/commands', cmd)));
   }
 
-  const home2 = makeTempDir('agent-sdlc-claude-no-orch-');
+  const home2 = makeTempDir('sdlc-kit-claude-no-orch-');
   runInstall({ targets: ['claude'], homeDir: home2, includeOrchestrator: false });
   assert.ok(fs.existsSync(path.join(home2, '.claude/skills/sdlc-workflow/SKILL.md')));
   assert.equal(fs.existsSync(path.join(home2, '.claude/skills/sdlc-orchestrator')), false);
 });
 
 test('--claude --optimize merges settings safely, preserves plugins/hooks, and creates backup', () => {
-  const home = makeTempDir('agent-sdlc-opt-');
+  const home = makeTempDir('sdlc-kit-opt-');
   const claudeDir = path.join(home, '.claude');
   fs.mkdirSync(claudeDir, { recursive: true });
   const existing = {
@@ -75,7 +75,7 @@ test('--claude --optimize merges settings safely, preserves plugins/hooks, and c
 
   runInstall({ targets: ['claude'], optimize: true, homeDir: home });
 
-  assert.ok(fs.existsSync(path.join(claudeDir, 'settings.json.agent-sdlc.bak')));
+  assert.ok(fs.existsSync(path.join(claudeDir, 'settings.json.sdlc-kit.bak')));
   const updated = JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8'));
   assert.equal(updated.model, 'opusplan');
   assert.equal(updated.env.CUSTOM_VAR, 'keep-me');
@@ -83,18 +83,18 @@ test('--claude --optimize merges settings safely, preserves plugins/hooks, and c
   assert.equal(updated.env.ENABLE_TOOL_SEARCH, 'auto:5');
   assert.deepEqual(updated.enabledPlugins, existing.enabledPlugins);
   assert.deepEqual(updated.hooks, existing.hooks);
-  assert.ok(fs.existsSync(path.join(claudeDir, 'agent-sdlc-statusline.mjs')));
+  assert.ok(fs.existsSync(path.join(claudeDir, 'sdlc-kit-statusline.mjs')));
 });
 
 test('--codex, --antigravity, and --local install to expected paths', () => {
-  const home = makeTempDir('agent-sdlc-multi-');
+  const home = makeTempDir('sdlc-kit-multi-');
   runInstall({ targets: ['codex'], homeDir: home });
   assert.ok(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow/SKILL.md')));
   assert.ok(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow/references/architecture-checklist.md')));
   assert.ok(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow/references/monolith-and-microservices.md')));
   assert.ok(fs.existsSync(path.join(home, '.agents/skills/sdlc-workflow/SKILL.md')));
 
-  const homeAg = makeTempDir('agent-sdlc-ag-');
+  const homeAg = makeTempDir('sdlc-kit-ag-');
   runInstall({ targets: ['antigravity'], homeDir: homeAg });
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/SKILL.md')));
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/clean-code.md')));
@@ -106,14 +106,14 @@ test('--codex, --antigravity, and --local install to expected paths', () => {
   assert.equal(fs.existsSync(path.join(homeAg, '.codex')), false);
 
   runInstall({ targets: ['local'], homeDir: home });
-  const localPrompt = path.join(home, '.agent-sdlc/LOCAL_PROMPT.md');
+  const localPrompt = path.join(home, '.sdlc-kit/LOCAL_PROMPT.md');
   assert.ok(fs.existsSync(localPrompt));
   assert.ok(fs.statSync(localPrompt).size < 2600);
 });
 
 test('--project scaffolds missing files, preserves existing AGENTS.md, and updates .gitignore idempotently', () => {
-  const cwd = makeTempDir('agent-sdlc-proj-');
-  const home = makeTempDir('agent-sdlc-proj-home-');
+  const cwd = makeTempDir('sdlc-kit-proj-');
+  const home = makeTempDir('sdlc-kit-proj-home-');
   fs.writeFileSync(path.join(cwd, 'AGENTS.md'), '# Custom Project Agents\n');
   fs.writeFileSync(path.join(cwd, '.gitignore'), 'node_modules/\n');
 
@@ -134,8 +134,8 @@ test('--project scaffolds missing files, preserves existing AGENTS.md, and updat
   assert.equal(res2.actions.length, 0);
 });
 
-test('--dry-run writes nothing and --uninstall removes only agent-sdlc files', () => {
-  const home = makeTempDir('agent-sdlc-dry-');
+test('--dry-run writes nothing and --uninstall removes only sdlc-kit files', () => {
+  const home = makeTempDir('sdlc-kit-dry-');
   const allTargets = parseArgs(['--all']).targets;
   assert.deepEqual(allTargets, ['claude', 'codex', 'antigravity', 'cursor', 'opencode', 'local']);
   runInstall({ targets: allTargets, dryRun: true, homeDir: home });
@@ -246,14 +246,14 @@ test('agentskills.io and command frontmatter compliance', () => {
 });
 
 test('repeated --claude --optimize preserves original .bak file', () => {
-  const home = makeTempDir('agent-sdlc-bak-');
+  const home = makeTempDir('sdlc-kit-bak-');
   const claudeDir = path.join(home, '.claude');
   fs.mkdirSync(claudeDir, { recursive: true });
   const original = '{"theme":"light"}\n';
   fs.writeFileSync(path.join(claudeDir, 'settings.json'), original);
 
   runInstall({ targets: ['claude'], optimize: true, homeDir: home });
-  const bakPath = path.join(claudeDir, 'settings.json.agent-sdlc.bak');
+  const bakPath = path.join(claudeDir, 'settings.json.sdlc-kit.bak');
   assert.equal(fs.readFileSync(bakPath, 'utf8'), original);
 
   // Second run must NOT overwrite original backup
@@ -262,7 +262,7 @@ test('repeated --claude --optimize preserves original .bak file', () => {
 });
 
 test('--cursor and --opencode install, detect, and uninstall cleanly', () => {
-  const home = makeTempDir('agent-sdlc-cur-oc-');
+  const home = makeTempDir('sdlc-kit-cur-oc-');
   fs.mkdirSync(path.join(home, '.cursor'));
   fs.mkdirSync(path.join(home, '.config', 'opencode'), { recursive: true });
   assert.deepEqual(detectTargets(home), ['cursor', 'opencode']);
@@ -278,16 +278,16 @@ test('--cursor and --opencode install, detect, and uninstall cleanly', () => {
 });
 
 test('--project preserves pre-existing CLAUDE.md without overwriting', () => {
-  const cwd = makeTempDir('agent-sdlc-claudemd-');
-  const home = makeTempDir('agent-sdlc-claudemd-home-');
+  const cwd = makeTempDir('sdlc-kit-claudemd-');
+  const home = makeTempDir('sdlc-kit-claudemd-home-');
   fs.writeFileSync(path.join(cwd, 'CLAUDE.md'), '# Existing CLAUDE\n');
   runInstall({ targets: ['project'], cwd, homeDir: home });
   assert.equal(fs.readFileSync(path.join(cwd, 'CLAUDE.md'), 'utf8'), '# Existing CLAUDE\n');
 });
 
 test('runDoctor reports warnings on bloated/unoptimized setup and 0 warnings on clean setup', () => {
-  const home = makeTempDir('agent-sdlc-doc-bad-');
-  const cwd = makeTempDir('agent-sdlc-doc-proj-');
+  const home = makeTempDir('sdlc-kit-doc-bad-');
+  const cwd = makeTempDir('sdlc-kit-doc-proj-');
   fs.mkdirSync(path.join(home, '.claude/skills'), { recursive: true });
   fs.writeFileSync(path.join(home, '.claude/settings.json'), '{"model":"opus"}');
   for (let i = 0; i < 22; i++) {
@@ -300,8 +300,8 @@ test('runDoctor reports warnings on bloated/unoptimized setup and 0 warnings on 
   const bad = runDoctor({ homeDir: home, cwd });
   assert.ok(bad.warnCount >= 4);
 
-  const cleanHome = makeTempDir('agent-sdlc-doc-ok-');
-  const cleanCwd = makeTempDir('agent-sdlc-doc-ok-proj-');
+  const cleanHome = makeTempDir('sdlc-kit-doc-ok-');
+  const cleanCwd = makeTempDir('sdlc-kit-doc-ok-proj-');
   fs.mkdirSync(path.join(cleanCwd, '.git'));
   runInstall({ targets: ['claude'], optimize: true, homeDir: cleanHome });
   runInstall({ targets: ['project'], cwd: cleanCwd, homeDir: cleanHome });
@@ -310,9 +310,9 @@ test('runDoctor reports warnings on bloated/unoptimized setup and 0 warnings on 
 });
 
 test('installed statusline runs with plain node (no bash or jq) and handles bad input', () => {
-  const home = makeTempDir('agent-sdlc-statusline-');
+  const home = makeTempDir('sdlc-kit-statusline-');
   runInstall({ targets: ['claude'], optimize: true, homeDir: home });
-  const script = path.join(home, '.claude', 'agent-sdlc-statusline.mjs');
+  const script = path.join(home, '.claude', 'sdlc-kit-statusline.mjs');
   const run = (input: string): string => execFileSync(process.execPath, [script], { input, encoding: 'utf8' });
 
   const out = run(
@@ -336,12 +336,12 @@ test('installed statusline runs with plain node (no bash or jq) and handles bad 
 test('CLI subprocess --doctor smoke test', () => {
   const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'dist/bin/cli.js');
   const out = execFileSync(process.execPath, [cliPath, '--doctor'], { encoding: 'utf8' });
-  assert.ok(out.includes('agent-sdlc --doctor'));
+  assert.ok(out.includes('sdlc-kit --doctor'));
   assert.ok(out.includes('Summary:'));
 });
 
 test('install never clobbers a user-owned command; --force overrides', () => {
-  const home = makeTempDir('agent-sdlc-noclobber-');
+  const home = makeTempDir('sdlc-kit-noclobber-');
   const review = path.join(home, '.claude/commands/review.md');
   fs.mkdirSync(path.dirname(review), { recursive: true });
   fs.writeFileSync(review, 'my own review command\n');
@@ -355,9 +355,9 @@ test('install never clobbers a user-owned command; --force overrides', () => {
 });
 
 test('uninstall keeps files modified after install and removes the manifest when done', () => {
-  const home = makeTempDir('agent-sdlc-uninst-');
+  const home = makeTempDir('sdlc-kit-uninst-');
   runInstall({ targets: ['claude', 'local'], homeDir: home });
-  assert.ok(fs.existsSync(path.join(home, '.agent-sdlc/manifest.json')));
+  assert.ok(fs.existsSync(path.join(home, '.sdlc-kit/manifest.json')));
 
   const edited = path.join(home, '.claude/commands/ship.md');
   fs.appendFileSync(edited, '\n# my tweak\n');
@@ -367,13 +367,13 @@ test('uninstall keeps files modified after install and removes the manifest when
   assert.ok(res.warnings.some((w) => w.includes('ship.md') && w.includes('modified')));
   assert.equal(fs.existsSync(path.join(home, '.claude/commands/start.md')), false);
   assert.equal(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow')), false);
-  assert.equal(fs.existsSync(path.join(home, '.agent-sdlc/LOCAL_PROMPT.md')), false);
+  assert.equal(fs.existsSync(path.join(home, '.sdlc-kit/LOCAL_PROMPT.md')), false);
 });
 
 test('uninstall removes legacy (pre-manifest) installs only when content matches the package', () => {
-  const home = makeTempDir('agent-sdlc-legacy-');
+  const home = makeTempDir('sdlc-kit-legacy-');
   runInstall({ targets: ['claude'], homeDir: home });
-  fs.rmSync(path.join(home, '.agent-sdlc'), { recursive: true });
+  fs.rmSync(path.join(home, '.sdlc-kit'), { recursive: true });
   fs.writeFileSync(path.join(home, '.claude/commands/qa.md'), 'user rewrote this\n');
 
   runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
@@ -382,7 +382,7 @@ test('uninstall removes legacy (pre-manifest) installs only when content matches
 });
 
 test('--optimize keeps user model/env and --uninstall reverts only what it added', () => {
-  const home = makeTempDir('agent-sdlc-revert-');
+  const home = makeTempDir('sdlc-kit-revert-');
   const claudeDir = path.join(home, '.claude');
   fs.mkdirSync(claudeDir, { recursive: true });
   const settingsPath = path.join(claudeDir, 'settings.json');
@@ -405,18 +405,18 @@ test('--optimize keeps user model/env and --uninstall reverts only what it added
 });
 
 test('upgrade prunes stale unmodified files and doctor flags an outdated install', () => {
-  const home = makeTempDir('agent-sdlc-upgrade-');
+  const home = makeTempDir('sdlc-kit-upgrade-');
   runInstall({ targets: ['claude'], homeDir: home });
   const stale = path.join(home, '.claude/skills/sdlc-workflow/references/old-removed.md');
   fs.writeFileSync(stale, 'from an older version\n');
-  const manifestPath = path.join(home, '.agent-sdlc/manifest.json');
+  const manifestPath = path.join(home, '.sdlc-kit/manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   
   manifest.files[stale] = crypto.createHash('sha256').update('from an older version\n').digest('hex');
   manifest.version = '0.0.1';
   fs.writeFileSync(manifestPath, JSON.stringify(manifest));
 
-  const cwd = makeTempDir('agent-sdlc-upgrade-cwd-');
+  const cwd = makeTempDir('sdlc-kit-upgrade-cwd-');
   const before = runDoctor({ homeDir: home, cwd });
   assert.ok(before.checks.some((c) => c.area === 'version' && c.level === 'WARN'));
 
@@ -427,9 +427,9 @@ test('upgrade prunes stale unmodified files and doctor flags an outdated install
 });
 
 test('--dry-run with existing manifest does not modify it', () => {
-  const home = makeTempDir('agent-sdlc-dry-manifest-');
+  const home = makeTempDir('sdlc-kit-dry-manifest-');
   runInstall({ targets: ['claude'], homeDir: home });
-  const manifestPath = path.join(home, '.agent-sdlc/manifest.json');
+  const manifestPath = path.join(home, '.sdlc-kit/manifest.json');
   const before = fs.readFileSync(manifestPath, 'utf8');
   runInstall({ targets: ['claude'], uninstall: true, dryRun: true, homeDir: home });
   assert.equal(fs.readFileSync(manifestPath, 'utf8'), before);
@@ -437,7 +437,7 @@ test('--dry-run with existing manifest does not modify it', () => {
 });
 
 test('--cursor and --opencode also install and uninstall the 9 slash commands', () => {
-  const home = makeTempDir('agent-sdlc-cmds-');
+  const home = makeTempDir('sdlc-kit-cmds-');
   runInstall({ targets: ['cursor', 'opencode'], homeDir: home });
   for (const cmd of COMMAND_FILES) {
     assert.ok(fs.existsSync(path.join(home, '.cursor/commands', cmd)));
@@ -473,8 +473,8 @@ test('token budget: slim frontmatter descriptions and short commands', () => {
 });
 
 test('doctor handles CRLF rule files and flags plugin + npx duplicate installs', () => {
-  const home = makeTempDir('agent-sdlc-dup-');
-  const cwd = makeTempDir('agent-sdlc-dup-cwd-');
+  const home = makeTempDir('sdlc-kit-dup-');
+  const cwd = makeTempDir('sdlc-kit-dup-cwd-');
   fs.mkdirSync(path.join(cwd, '.claude/rules'), { recursive: true });
   fs.writeFileSync(
     path.join(cwd, '.claude/rules/scoped.md'),
@@ -485,7 +485,7 @@ test('doctor handles CRLF rule files and flags plugin + npx duplicate installs',
   fs.mkdirSync(pluginsDir, { recursive: true });
   fs.writeFileSync(
     path.join(pluginsDir, 'installed_plugins.json'),
-    JSON.stringify({ plugins: { 'agent-sdlc@agent-sdlc': [{}] } }),
+    JSON.stringify({ plugins: { 'sdlc-kit@sdlc-kit': [{}] } }),
   );
   const report = runDoctor({ homeDir: home, cwd });
   assert.ok(report.checks.some((c) => c.area === 'duplicate-install' && c.level === 'WARN'));
@@ -493,7 +493,7 @@ test('doctor handles CRLF rule files and flags plugin + npx duplicate installs',
 });
 
 test('uninstall cleans up a legacy bash statusline from an older install', () => {
-  const home = makeTempDir('agent-sdlc-legacy-sl-');
+  const home = makeTempDir('sdlc-kit-legacy-sl-');
   const claudeDir = path.join(home, '.claude');
   fs.mkdirSync(claudeDir, { recursive: true });
   const legacy = path.join(claudeDir, 'statusline-command.sh');
@@ -502,7 +502,7 @@ test('uninstall cleans up a legacy bash statusline from an older install', () =>
     path.join(claudeDir, 'settings.json'),
     JSON.stringify({ statusLine: { type: 'command', command: 'bash ~/.claude/statusline-command.sh' } }),
   );
-  const manifestPath = path.join(home, '.agent-sdlc', 'manifest.json');
+  const manifestPath = path.join(home, '.sdlc-kit', 'manifest.json');
   fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
   fs.writeFileSync(
     manifestPath,
@@ -517,4 +517,51 @@ test('uninstall cleans up a legacy bash statusline from an older install', () =>
   assert.equal(fs.existsSync(legacy), false);
   const settings = JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8'));
   assert.equal(settings.statusLine, undefined);
+});
+
+test('a 0.1.0 install under the agent-sdlc names is migrated, then uninstalls cleanly', () => {
+  const home = makeTempDir('sdlc-kit-migrate-');
+  const claudeDir = path.join(home, '.claude');
+  const oldDir = path.join(home, '.agent-sdlc');
+  fs.mkdirSync(claudeDir, { recursive: true });
+  fs.mkdirSync(oldDir, { recursive: true });
+  const sha = (f: string): string => crypto.createHash('sha256').update(fs.readFileSync(f)).digest('hex');
+
+  const oldStatusline = path.join(claudeDir, 'agent-sdlc-statusline.mjs');
+  const oldPrompt = path.join(oldDir, 'LOCAL_PROMPT.md');
+  const oldBackup = path.join(claudeDir, 'settings.json.agent-sdlc.bak');
+  fs.writeFileSync(oldStatusline, '// old statusline\n');
+  fs.writeFileSync(oldPrompt, 'old prompt\n');
+  fs.writeFileSync(oldBackup, '{}\n');
+  fs.writeFileSync(
+    path.join(claudeDir, 'settings.json'),
+    JSON.stringify({ statusLine: { type: 'command', command: `node "${oldStatusline}"` } }),
+  );
+  fs.writeFileSync(
+    path.join(oldDir, 'manifest.json'),
+    JSON.stringify({
+      version: '0.1.0',
+      files: { [oldStatusline]: sha(oldStatusline), [oldPrompt]: sha(oldPrompt) },
+      settings: { model: false, env: [], statusLine: true },
+    }),
+  );
+
+  runInstall({ targets: ['claude', 'local'], optimize: true, homeDir: home });
+
+  assert.ok(fs.existsSync(path.join(home, '.sdlc-kit', 'manifest.json')));
+  assert.equal(fs.existsSync(oldDir), false);
+  assert.ok(fs.existsSync(path.join(home, '.sdlc-kit', 'LOCAL_PROMPT.md')));
+  const newStatusline = path.join(claudeDir, 'sdlc-kit-statusline.mjs');
+  assert.ok(fs.existsSync(newStatusline));
+  assert.equal(fs.existsSync(oldStatusline), false);
+  assert.ok(fs.existsSync(oldBackup));
+  assert.equal(fs.existsSync(path.join(claudeDir, 'settings.json.sdlc-kit.bak')), false);
+  const settings = JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8'));
+  assert.equal(settings.statusLine.command, `node "${newStatusline}"`);
+
+  runInstall({ targets: ['claude', 'local'], uninstall: true, homeDir: home });
+  assert.equal(fs.existsSync(newStatusline), false);
+  assert.equal(fs.existsSync(path.join(home, '.sdlc-kit')), false);
+  const after = JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8'));
+  assert.equal(after.statusLine, undefined);
 });

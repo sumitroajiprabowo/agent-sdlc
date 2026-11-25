@@ -1,11 +1,11 @@
 {
-  "name": "agent-sdlc",
+  "name": "sdlc-kit",
   "owner": {
     "name": "sumitroajiprabowo"
   },
   "plugins": [
     {
-      "name": "agent-sdlc",
+      "name": "sdlc-kit",
       "source": "./",
       "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol."
     }

@@ -1,5 +1,5 @@
 {
-  "name": "agent-sdlc",
+  "name": "sdlc-kit",
   "version": "0.1.1",
   "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for AI coding agents.",
   "author": {
