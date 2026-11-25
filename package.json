@@ -1,5 +1,5 @@
 {
-  "name": "agent-sdlc",
+  "name": "@sumitroajiprabowo/agent-sdlc",
   "version": "0.1.0",
   "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for Claude Code, Codex, Antigravity, and Local LLMs.",
   "type": "module",
