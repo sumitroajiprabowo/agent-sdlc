@@ -1,6 +1,6 @@
 {
   "name": "sdlc-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for Claude Code, Codex, Antigravity, and Local LLMs.",
   "type": "module",
   "license": "MIT",
@@ -43,12 +43,12 @@
   "author": "sumitroajiprabowo",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sumitroajiprabowo/agent-sdlc.git"
+    "url": "git+https://github.com/sumitroajiprabowo/sdlc-kit.git"
   },
   "bugs": {
-    "url": "https://github.com/sumitroajiprabowo/agent-sdlc/issues"
+    "url": "https://github.com/sumitroajiprabowo/sdlc-kit/issues"
   },
-  "homepage": "https://github.com/sumitroajiprabowo/agent-sdlc#readme",
+  "homepage": "https://github.com/sumitroajiprabowo/sdlc-kit#readme",
   "devDependencies": {
     "@types/node": "^22.20.6",
     "typescript": "~5.9.0"

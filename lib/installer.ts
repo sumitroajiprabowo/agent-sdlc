@@ -122,10 +122,12 @@ const CLAUDE_OPTIMIZE_ENV: Record<string, string> = {
 // Pre-TypeScript installs used a bash statusline; uninstall must still clean it up.
 const LEGACY_STATUSLINE_FILE = 'statusline-command.sh';
 const LEGACY_STATUSLINE_COMMAND = 'bash ~/.claude/statusline-command.sh';
-const STATUSLINE_FILE = 'agent-sdlc-statusline.mjs';
+const STATUSLINE_FILE = 'sdlc-kit-statusline.mjs';
+// 0.1.0 shipped under the name agent-sdlc; installs made then are migrated on the next run.
+const PRE_RENAME_STATUSLINE_FILE = 'agent-sdlc-statusline.mjs';
 
-function statuslineCommand(homeDir: string): string {
-  return `node "${path.join(homeDir, '.claude', STATUSLINE_FILE)}"`;
+function statuslineCommand(homeDir: string, file: string = STATUSLINE_FILE): string {
+  return `node "${path.join(homeDir, '.claude', file)}"`;
 }
 
 const PROJECT_GITIGNORE_ENTRIES = [
@@ -237,7 +239,10 @@ export function detectTargets(homeDir: string = os.homedir()): Target[] {
   return detected.length > 0 ? detected : ['antigravity'];
 }
 
-const MANIFEST_NAME = path.join('.agent-sdlc', 'manifest.json');
+const MANIFEST_NAME = path.join('.sdlc-kit', 'manifest.json');
+const PRE_RENAME_MANIFEST_NAME = path.join('.agent-sdlc', 'manifest.json');
+const LOCAL_PROMPT_NAME = path.join('.sdlc-kit', 'LOCAL_PROMPT.md');
+const PRE_RENAME_LOCAL_PROMPT_NAME = path.join('.agent-sdlc', 'LOCAL_PROMPT.md');
 
 function sha256(file: string): string {
   return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -248,11 +253,24 @@ function readPackageVersion(packageRoot: string): string {
 }
 
 function loadManifest(homeDir: string): Manifest {
+  for (const name of [MANIFEST_NAME, PRE_RENAME_MANIFEST_NAME]) {
+    try {
+      const m = JSON.parse(fs.readFileSync(path.join(homeDir, name), 'utf8'));
+      return { version: m.version, files: m.files ?? {}, settings: m.settings ?? null };
+    } catch {
+      // missing or unreadable: try the pre-rename location
+    }
+  }
+  return { version: null, files: {}, settings: null };
+}
+
+function removeManifestFile(homeDir: string, name: string): void {
+  const file = path.join(homeDir, name);
+  fs.rmSync(file, { force: true });
   try {
-    const m = JSON.parse(fs.readFileSync(path.join(homeDir, MANIFEST_NAME), 'utf8'));
-    return { version: m.version, files: m.files ?? {}, settings: m.settings ?? null };
+    fs.rmdirSync(path.dirname(file));
   } catch {
-    return { version: null, files: {}, settings: null };
+    // directory not empty or already gone
   }
 }
 
@@ -260,17 +278,14 @@ function saveManifest(homeDir: string, manifest: Manifest, version: string, dryR
   if (dryRun) return;
   const file = path.join(homeDir, MANIFEST_NAME);
   if (Object.keys(manifest.files).length === 0 && !manifest.settings) {
-    fs.rmSync(file, { force: true });
-    try {
-      fs.rmdirSync(path.dirname(file));
-    } catch {
-      // directory not empty or already gone
-    }
+    removeManifestFile(homeDir, MANIFEST_NAME);
+    removeManifestFile(homeDir, PRE_RENAME_MANIFEST_NAME);
     return;
   }
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const body = { version, files: manifest.files, settings: manifest.settings };
   fs.writeFileSync(file, `${JSON.stringify(body, null, 2)}\n`, 'utf8');
+  removeManifestFile(homeDir, PRE_RENAME_MANIFEST_NAME);
 }
 
 /** Copy a managed file unless it exists with content we did not write (unless --force). */
@@ -279,7 +294,7 @@ function installManagedFile(ctx: Context, src: string, dst: string): void {
   if (fs.existsSync(dst)) {
     const cur = sha256(dst);
     if (cur !== srcHash && cur !== ctx.manifest.files[dst] && !ctx.force) {
-      ctx.warnings.push(`Skipped ${dst}: exists and was not installed by agent-sdlc (use --force to overwrite)`);
+      ctx.warnings.push(`Skipped ${dst}: exists and was not installed by sdlc-kit (use --force to overwrite)`);
       return;
     }
   }
@@ -388,7 +403,8 @@ function uninstallSkillsFromDir(ctx: Context, skillsRoot: string): void {
 function applyClaudeOptimize(ctx: Context): void {
   const claudeDir = path.join(ctx.homeDir, '.claude');
   const settingsPath = path.join(claudeDir, 'settings.json');
-  const backupPath = path.join(claudeDir, 'settings.json.agent-sdlc.bak');
+  const backupPath = path.join(claudeDir, 'settings.json.sdlc-kit.bak');
+  const preRenameBackupPath = path.join(claudeDir, 'settings.json.agent-sdlc.bak');
   const statuslineSrc = path.join(ctx.packageRoot, 'dist', 'lib', 'statusline.js');
   const statuslineDst = path.join(claudeDir, STATUSLINE_FILE);
   const { dryRun, actions, warnings } = ctx;
@@ -402,7 +418,7 @@ function applyClaudeOptimize(ctx: Context): void {
       warnings.push(`Skipped --optimize on ${settingsPath}: existing file is not valid JSON.`);
       return;
     }
-    if (!fs.existsSync(backupPath)) {
+    if (!fs.existsSync(backupPath) && !fs.existsSync(preRenameBackupPath)) {
       if (!dryRun) {
         fs.writeFileSync(backupPath, raw, 'utf8');
       }
@@ -429,6 +445,10 @@ function applyClaudeOptimize(ctx: Context): void {
   }
 
   installManagedFile(ctx, statuslineSrc, statuslineDst);
+  uninstallManagedFile(ctx, null, path.join(claudeDir, PRE_RENAME_STATUSLINE_FILE));
+  if (rec.statusLine && settings.statusLine?.command === statuslineCommand(ctx.homeDir, PRE_RENAME_STATUSLINE_FILE)) {
+    settings.statusLine.command = statuslineCommand(ctx.homeDir);
+  }
   if (!settings.statusLine) {
     settings.statusLine = {
       type: 'command',
@@ -464,15 +484,22 @@ function revertClaudeOptimize(ctx: Context): void {
     }
     if (settings.env && Object.keys(settings.env).length === 0) delete settings.env;
     const slCommand = settings.statusLine?.command;
-    if (rec.statusLine && (slCommand === statuslineCommand(ctx.homeDir) || slCommand === LEGACY_STATUSLINE_COMMAND)) {
+    if (
+      rec.statusLine &&
+      (slCommand === statuslineCommand(ctx.homeDir) ||
+        slCommand === statuslineCommand(ctx.homeDir, PRE_RENAME_STATUSLINE_FILE) ||
+        slCommand === LEGACY_STATUSLINE_COMMAND)
+    ) {
       delete settings.statusLine;
     }
     if (!ctx.dryRun) {
       fs.writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
     }
     ctx.actions.push(`${ctx.dryRun ? '[dry-run] ' : ''}revert optimize ${settingsPath}`);
-    const backup = `${settingsPath}.agent-sdlc.bak`;
-    if (fs.existsSync(backup)) ctx.warnings.push(`Left ${backup} in place (original pre-optimize copy).`);
+    for (const suffix of ['sdlc-kit', 'agent-sdlc']) {
+      const backup = `${settingsPath}.${suffix}.bak`;
+      if (fs.existsSync(backup)) ctx.warnings.push(`Left ${backup} in place (original pre-optimize copy).`);
+    }
   }
   ctx.manifest.settings = null;
 }
@@ -579,6 +606,7 @@ export function runInstall(options: RunOptions = {}): RunResult {
           path.join(packageRoot, 'dist', 'lib', 'statusline.js'),
           path.join(homeDir, '.claude', STATUSLINE_FILE),
         );
+        uninstallManagedFile(ctx, null, path.join(homeDir, '.claude', PRE_RENAME_STATUSLINE_FILE));
         uninstallManagedFile(ctx, null, path.join(homeDir, '.claude', LEGACY_STATUSLINE_FILE));
       } else if (optimize) {
         applyClaudeOptimize(ctx);
@@ -597,12 +625,14 @@ export function runInstall(options: RunOptions = {}): RunResult {
       syncCommands('opencode');
     } else if (target === 'local') {
       const src = path.join(packageRoot, 'templates', 'local', 'LOCAL_PROMPT.md');
-      const dst = path.join(homeDir, '.agent-sdlc', 'LOCAL_PROMPT.md');
+      const dst = path.join(homeDir, LOCAL_PROMPT_NAME);
+      const preRenameDst = path.join(homeDir, PRE_RENAME_LOCAL_PROMPT_NAME);
       if (uninstall) {
         uninstallManagedFile(ctx, src, dst);
       } else {
         installManagedFile(ctx, src, dst);
       }
+      uninstallManagedFile(ctx, src, preRenameDst);
     } else if (target === 'project') {
       if (uninstall) {
         warnings.push('--uninstall ignores --project to avoid deleting repository files.');
@@ -634,13 +664,14 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
     ['antigravity', path.join(homeDir, '.agents/skills/sdlc-workflow/SKILL.md')],
     ['cursor', path.join(homeDir, '.cursor/skills/sdlc-workflow/SKILL.md')],
     ['opencode', path.join(homeDir, '.config/opencode/skills/sdlc-workflow/SKILL.md')],
-    ['local', path.join(homeDir, '.agent-sdlc/LOCAL_PROMPT.md')],
+    ['local', path.join(homeDir, LOCAL_PROMPT_NAME)],
+    ['local', path.join(homeDir, PRE_RENAME_LOCAL_PROMPT_NAME)],
   ];
-  const installed = locations.filter(([, p]) => fs.existsSync(p)).map(([name]) => name);
+  const installed = [...new Set(locations.filter(([, p]) => fs.existsSync(p)).map(([name]) => name))];
   if (installed.length > 0) {
     add('OK', 'installs', `Installed for: ${installed.join(', ')}`);
   } else {
-    add('WARN', 'installs', 'No agent-sdlc targets installed yet. Run npx sdlc-kit.');
+    add('WARN', 'installs', 'No sdlc-kit targets installed yet. Run npx sdlc-kit.');
   }
 
   const manifest = loadManifest(homeDir);
@@ -659,13 +690,13 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
     let pluginInstalled = false;
     try {
       pluginInstalled = Object.keys(JSON.parse(fs.readFileSync(pluginsFile, 'utf8')).plugins ?? {}).some(
-        (k) => k.startsWith('agent-sdlc@'),
+        (k) => k.startsWith('sdlc-kit@') || k.startsWith('agent-sdlc@'),
       );
     } catch {
       // unreadable plugin registry: skip the duplicate check
     }
     if (pluginInstalled && fs.existsSync(path.join(claudeDir, 'skills', 'sdlc-workflow'))) {
-      add('WARN', 'duplicate-install', 'agent-sdlc is installed as a Claude plugin AND via npx; skills load twice. Uninstall one (npx sdlc-kit --claude --uninstall).');
+      add('WARN', 'duplicate-install', 'sdlc-kit is installed as a Claude plugin AND via npx; skills load twice. Uninstall one (npx sdlc-kit --claude --uninstall).');
     }
   }
   if (fs.existsSync(claudeDir)) {

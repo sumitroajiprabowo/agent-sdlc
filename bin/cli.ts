@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/installer.js';
 
-const HELP_TEXT = `agent-sdlc — SDLC skills, slash commands & multi-agent orchestrator protocol
+const HELP_TEXT = `sdlc-kit — SDLC skills, slash commands & multi-agent orchestrator protocol
 
 Usage:
   npx sdlc-kit [options]
-  npx github:sumitroajiprabowo/agent-sdlc [options]
+  npx github:sumitroajiprabowo/sdlc-kit [options]
 
 Targets (auto-detected if omitted):
   --claude            Install skills & 9 slash commands to ~/.claude/
@@ -16,7 +16,7 @@ Targets (auto-detected if omitted):
   --antigravity       Install skills to ~/.agents/skills/
   --cursor            Install skills & commands to ~/.cursor/
   --opencode          Install skills & commands to ~/.config/opencode/ and ~/.agents/skills/
-  --local             Install a compact prompt (<800 tokens) to ~/.agent-sdlc/LOCAL_PROMPT.md
+  --local             Install a compact prompt (<800 tokens) to ~/.sdlc-kit/LOCAL_PROMPT.md
   --project           Scaffold docs/, PR template, AGENTS.md, CLAUDE.md bridge & .gitignore
   --all               Install to claude, codex, antigravity, cursor, opencode, and local
 
@@ -25,8 +25,8 @@ Options:
   --doctor            Run a read-only health & token-efficiency audit
   --no-orchestrator   Skip installing the multi-agent sdlc-orchestrator skill
   --dry-run           Preview planned changes without writing files
-  --uninstall         Remove agent-sdlc managed files from selected targets (skips files you edited)
-  --force             Overwrite/remove files even if they were not installed by agent-sdlc
+  --uninstall         Remove sdlc-kit managed files from selected targets (skips files you edited)
+  --force             Overwrite/remove files even if they were not installed by sdlc-kit
   -h, --help          Show help
   -v, --version       Show version
 `;
@@ -55,7 +55,7 @@ function main() {
 
   if (parsed.doctor) {
     const report = runDoctor();
-    console.log('agent-sdlc --doctor');
+    console.log('sdlc-kit --doctor');
     for (const c of report.checks) {
       console.log(`  [${c.level}] ${c.area}: ${c.message}`);
     }
@@ -65,7 +65,7 @@ function main() {
 
   const result = runInstall(parsed);
   const mode = parsed.uninstall ? 'Uninstall' : 'Install';
-  console.log(`agent-sdlc (${mode}) targets: ${result.targets.join(', ')}`);
+  console.log(`sdlc-kit (${mode}) targets: ${result.targets.join(', ')}`);
   for (const action of result.actions) {
     console.log(`  - ${action}`);
   }

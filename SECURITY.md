@@ -1,7 +1,7 @@
 # Security Policy
 
 ## Scope
-`agent-sdlc` copies markdown skills/commands and edits `~/.claude/settings.json` (only with `--optimize`). It has no runtime dependencies and makes no network calls.
+`sdlc-kit` copies markdown skills/commands and edits `~/.claude/settings.json` (only with `--optimize`). It has no runtime dependencies and makes no network calls.
 
 ## Reporting a vulnerability
 Please open a private advisory via GitHub: **Security → Report a vulnerability** on the repository. Do not file public issues for security problems. Expect an initial response within 7 days.
