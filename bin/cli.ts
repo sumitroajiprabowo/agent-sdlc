@@ -7,7 +7,7 @@ import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/i
 const HELP_TEXT = `agent-sdlc — SDLC skills, slash commands & multi-agent orchestrator protocol
 
 Usage:
-  npx @sumitroajiprabowo/agent-sdlc [options]
+  npx sdlc-kit [options]
   npx github:sumitroajiprabowo/agent-sdlc [options]
 
 Targets (auto-detected if omitted):

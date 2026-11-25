@@ -640,7 +640,7 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
   if (installed.length > 0) {
     add('OK', 'installs', `Installed for: ${installed.join(', ')}`);
   } else {
-    add('WARN', 'installs', 'No agent-sdlc targets installed yet. Run npx @sumitroajiprabowo/agent-sdlc.');
+    add('WARN', 'installs', 'No agent-sdlc targets installed yet. Run npx sdlc-kit.');
   }
 
   const manifest = loadManifest(homeDir);
@@ -665,7 +665,7 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
       // unreadable plugin registry: skip the duplicate check
     }
     if (pluginInstalled && fs.existsSync(path.join(claudeDir, 'skills', 'sdlc-workflow'))) {
-      add('WARN', 'duplicate-install', 'agent-sdlc is installed as a Claude plugin AND via npx; skills load twice. Uninstall one (npx @sumitroajiprabowo/agent-sdlc --claude --uninstall).');
+      add('WARN', 'duplicate-install', 'agent-sdlc is installed as a Claude plugin AND via npx; skills load twice. Uninstall one (npx sdlc-kit --claude --uninstall).');
     }
   }
   if (fs.existsSync(claudeDir)) {

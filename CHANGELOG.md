@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release workflow (tag -> `npm publish --provenance`), macOS in CI matrix, `SECURITY.md`, issue template.
 
 ### Changed
-- The npm package is published as `@sumitroajiprabowo/agent-sdlc` (the unscoped name is taken). The installed command is still `agent-sdlc`.
+- The npm package is published as `sdlc-kit` (the name `agent-sdlc` is taken); the installed command is `sdlc-kit`.
 - Source migrated to TypeScript (`strict`), compiled to `dist/` by `tsc`; the `bin` entry is now `dist/bin/cli.js`. No runtime dependencies were added. CI runs `npm run typecheck`.
 - The `--optimize` statusline is now a Node script (`~/.claude/agent-sdlc-statusline.mjs`) instead of bash, so it works on Windows without `jq`. `--uninstall` still removes the old `statusline-command.sh` and its settings entry.
 - CI now also runs on Windows; `.gitattributes` forces LF line endings.
