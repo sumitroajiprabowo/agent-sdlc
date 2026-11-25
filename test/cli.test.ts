@@ -188,7 +188,7 @@ test('CLI subprocess smoke tests (--help, --version, invalid flag)', () => {
   assert.ok(helpOut.includes('--claude'));
 
   const verOut = execFileSync(process.execPath, [cliPath, '--version'], { encoding: 'utf8' }).trim();
-  assert.equal(verOut, '0.1.0');
+  assert.equal(verOut, JSON.parse(fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'package.json'), 'utf8')).version);
 
   assert.throws(
     () => execFileSync(process.execPath, [cliPath, '--nope'], { stdio: 'pipe' }),

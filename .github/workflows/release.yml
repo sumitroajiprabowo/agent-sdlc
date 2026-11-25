@@ -22,6 +22,8 @@ jobs:
       - run: npm test
       - name: Tag must match package.json version
         run: test "v$(node -p "require('./package.json').version")" = "${GITHUB_REF_NAME}"
+      - name: Upgrade npm (trusted publishing needs >= 11.5.1)
+        run: npm install -g npm@^11.5.1
       - name: Publish (skipped if this version is already on npm)
         run: |
           NAME=$(node -p "require('./package.json').name")

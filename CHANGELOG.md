@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-25
+
+First release published from CI via npm trusted publishing (OIDC, with provenance).
+
 ### Added
 - Manifest (`~/.agent-sdlc/manifest.json`) tracking installed files; `--force` flag.
 - Slash commands now also install for `--cursor` (`~/.cursor/commands/`) and `--opencode` (`~/.config/opencode/command/`).
