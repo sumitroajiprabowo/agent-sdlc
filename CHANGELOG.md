@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release workflow (tag -> `npm publish --provenance`), macOS in CI matrix, `SECURITY.md`, issue template.
 
 ### Changed
+- Source migrated to TypeScript (`strict`), compiled to `dist/` by `tsc`; the `bin` entry is now `dist/bin/cli.js`. No runtime dependencies were added. CI runs `npm run typecheck`.
 - Install never overwrites files it did not install (use `--force`); uninstall removes only unmodified managed files.
 - `--optimize` keeps your existing `model`/`env`; `--uninstall` reverts only what it added.
 - Minimum Node.js is now 20 (18 is EOL).

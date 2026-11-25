@@ -12,9 +12,9 @@ import {
   parseArgs,
   runDoctor,
   runInstall,
-} from '../lib/installer.mjs';
+} from '../lib/installer.js';
 
-function makeTempDir(prefix) {
+function makeTempDir(prefix: string): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 }
 
@@ -157,7 +157,7 @@ test('public repo leakage check: zero internal/company references in shipped fil
   const forbidden = ['ckt', 'sidekem', 'bukaloker', 'misindo', 'llm-wiki-mcp', 'freeradius', '/Users/'];
   const dirsToScan = ['skills', 'commands', 'templates', 'lib'];
 
-  function walk(dir) {
+  function walk(dir: string): void {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) {
@@ -181,7 +181,7 @@ test('public repo leakage check: zero internal/company references in shipped fil
 });
 
 test('CLI subprocess smoke tests (--help, --version, invalid flag)', () => {
-  const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'bin/cli.mjs');
+  const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'dist/bin/cli.js');
   const helpOut = execFileSync(process.execPath, [cliPath, '--help'], { encoding: 'utf8' });
   assert.ok(helpOut.includes('agent-sdlc'));
   assert.ok(helpOut.includes('--claude'));
@@ -191,7 +191,7 @@ test('CLI subprocess smoke tests (--help, --version, invalid flag)', () => {
 
   assert.throws(
     () => execFileSync(process.execPath, [cliPath, '--nope'], { stdio: 'pipe' }),
-    (err) => err.status !== 0,
+    (err: NodeJS.ErrnoException & { status?: number }) => err.status !== 0,
   );
 });
 
@@ -202,13 +202,13 @@ test('agentskills.io and command frontmatter compliance', () => {
     const skillPath = path.join(skillsDir, entry.name, 'SKILL.md');
     assert.ok(fs.existsSync(skillPath), `Missing SKILL.md in ${entry.name}`);
     const content = fs.readFileSync(skillPath, 'utf8');
-    const lines = content.splitlines ? content.splitlines() : content.split(/\r?\n/);
+    const lines = content.split(/\r?\n/);
     assert.ok(lines.length <= 100, `${entry.name}/SKILL.md has ${lines.length} lines (>100)`);
 
     const match = content.match(/^---\n([\s\S]*?)\n---\n/);
     assert.ok(match, `Missing YAML frontmatter in ${entry.name}/SKILL.md`);
-    const fm = {};
-    for (const line of match[1].split('\n')) {
+    const fm: Record<string, string> = {};
+    for (const line of (match[1] ?? '').split('\n')) {
       const idx = line.indexOf(':');
       if (idx !== -1) {
         fm[line.slice(0, idx).trim()] = line.slice(idx + 1).trim();
@@ -237,7 +237,7 @@ test('agentskills.io and command frontmatter compliance', () => {
     const content = fs.readFileSync(path.join(cmdDir, file), 'utf8');
     const match = content.match(/^---\n([\s\S]*?)\n---\n/);
     assert.ok(match, `Missing YAML frontmatter in commands/${file}`);
-    const descLine = match[1].split('\n').find((l) => l.startsWith('description:'));
+    const descLine = (match[1] ?? '').split('\n').find((l) => l.startsWith('description:'));
     assert.ok(descLine, `Missing description in commands/${file}`);
     const rawDesc = descLine.slice('description:'.length).trim();
     assert.ok(rawDesc.startsWith('"') && rawDesc.endsWith('"'), `Description in commands/${file} must be double-quoted`);
@@ -326,7 +326,7 @@ test('statusline-command.sh works via node fallback when jq is unavailable', () 
 });
 
 test('CLI subprocess --doctor smoke test', () => {
-  const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'bin/cli.mjs');
+  const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'dist/bin/cli.js');
   const out = execFileSync(process.execPath, [cliPath, '--doctor'], { encoding: 'utf8' });
   assert.ok(out.includes('agent-sdlc --doctor'));
   assert.ok(out.includes('Summary:'));
@@ -443,7 +443,7 @@ test('--cursor and --opencode also install and uninstall the 9 slash commands', 
 });
 
 test('versions stay in sync across package.json, plugin.json, and CHANGELOG', () => {
-  const read = (rel) => fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, rel), 'utf8');
+  const read = (rel: string): string => fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, rel), 'utf8');
   const pkg = JSON.parse(read('package.json'));
   const plugin = JSON.parse(read('.claude-plugin/plugin.json'));
   assert.equal(plugin.version, pkg.version);
@@ -455,7 +455,7 @@ test('token budget: slim frontmatter descriptions and short commands', () => {
   const root = DEFAULT_PACKAGE_ROOT;
   for (const skill of ['sdlc-workflow', 'sdlc-orchestrator']) {
     const body = fs.readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
-    const desc = body.match(/^description:\s*"(.*)"\s*$/m)[1];
+    const desc = body.match(/^description:\s*"(.*)"\s*$/m)?.[1] ?? '';
     assert.ok(desc.length <= 400, `${skill} description is ${desc.length} chars`);
   }
   for (const cmd of COMMAND_FILES) {

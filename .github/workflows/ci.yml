@@ -19,8 +19,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run typecheck
       - run: npm test
-      - run: node bin/cli.mjs --help
-      - run: node bin/cli.mjs --dry-run --all
-      - run: node bin/cli.mjs --doctor
+      - run: node dist/bin/cli.js --help
+      - run: node dist/bin/cli.js --dry-run --all
+      - run: node dist/bin/cli.js --doctor
       - run: npm pack --dry-run

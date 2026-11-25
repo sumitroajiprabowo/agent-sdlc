@@ -2,7 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/installer.mjs';
+import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/installer.js';
 
 const HELP_TEXT = `agent-sdlc — SDLC skills, slash commands & multi-agent orchestrator protocol
 
@@ -32,11 +32,11 @@ Options:
 `;
 
 function main() {
-  let parsed;
+  let parsed: ReturnType<typeof parseArgs>;
   try {
     parsed = parseArgs(process.argv.slice(2));
   } catch (err) {
-    console.error(`Error: ${err.message}`);
+    console.error(`Error: ${err instanceof Error ? err.message : String(err)}`);
     process.exit(1);
   }
 

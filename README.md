@@ -1,6 +1,6 @@
 # agent-sdlc
 
-Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDLC (plan, code, QA, ship, incident response). Installs into Claude Code, Codex, Antigravity, Cursor, OpenCode, or any local LLM. Plain Node.js, no dependencies.
+Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDLC (plan, code, QA, ship, incident response). Installs into Claude Code, Codex, Antigravity, Cursor, OpenCode, or any local LLM. TypeScript, no runtime dependencies.
 
 ## Why
 
@@ -158,7 +158,7 @@ No benchmark numbers are published; measure on your own setup. In Claude Code ru
 
 ```bash
 npm test                       # Node >=20, runs in temp dirs only
-node bin/cli.mjs --dry-run --all   # preview an install without writing
+node dist/bin/cli.js --dry-run --all   # after `npm ci && npm run build`; previews an install without writing
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
