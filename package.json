@@ -1,11 +1,14 @@
 {
-  "name": "@sumitroajiprabowo/agent-sdlc",
+  "name": "sdlc-kit",
   "version": "0.1.0",
   "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for Claude Code, Codex, Antigravity, and Local LLMs.",
   "type": "module",
   "license": "MIT",
   "bin": {
-    "agent-sdlc": "dist/bin/cli.js"
+    "sdlc-kit": "dist/bin/cli.js"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": [
     "dist",
