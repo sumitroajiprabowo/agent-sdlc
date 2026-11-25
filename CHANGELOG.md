@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Source migrated to TypeScript (`strict`), compiled to `dist/` by `tsc`; the `bin` entry is now `dist/bin/cli.js`. No runtime dependencies were added. CI runs `npm run typecheck`.
+- The `--optimize` statusline is now a Node script (`~/.claude/agent-sdlc-statusline.mjs`) instead of bash, so it works on Windows without `jq`. `--uninstall` still removes the old `statusline-command.sh` and its settings entry.
+- CI now also runs on Windows; `.gitattributes` forces LF line endings.
 - Install never overwrites files it did not install (use `--force`); uninstall removes only unmodified managed files.
 - `--optimize` keeps your existing `model`/`env`; `--uninstall` reverts only what it added.
 - Minimum Node.js is now 20 (18 is EOL).

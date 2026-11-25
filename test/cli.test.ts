@@ -83,7 +83,7 @@ test('--claude --optimize merges settings safely, preserves plugins/hooks, and c
   assert.equal(updated.env.ENABLE_TOOL_SEARCH, 'auto:5');
   assert.deepEqual(updated.enabledPlugins, existing.enabledPlugins);
   assert.deepEqual(updated.hooks, existing.hooks);
-  assert.ok(fs.existsSync(path.join(claudeDir, 'statusline-command.sh')));
+  assert.ok(fs.existsSync(path.join(claudeDir, 'agent-sdlc-statusline.mjs')));
 });
 
 test('--codex, --antigravity, and --local install to expected paths', () => {
@@ -309,20 +309,28 @@ test('runDoctor reports warnings on bloated/unoptimized setup and 0 warnings on 
   assert.equal(ok.warnCount, 0);
 });
 
-test('statusline-command.sh works via node fallback when jq is unavailable', () => {
-  const script = path.join(DEFAULT_PACKAGE_ROOT, 'templates/claude/statusline-command.sh');
-  const nodeDir = path.dirname(process.execPath);
-  const out = execFileSync('/bin/bash', [script], {
-    input: JSON.stringify({
-      context_window: { used_percentage: 74 },
+test('installed statusline runs with plain node (no bash or jq) and handles bad input', () => {
+  const home = makeTempDir('agent-sdlc-statusline-');
+  runInstall({ targets: ['claude'], optimize: true, homeDir: home });
+  const script = path.join(home, '.claude', 'agent-sdlc-statusline.mjs');
+  const run = (input: string): string => execFileSync(process.execPath, [script], { input, encoding: 'utf8' });
+
+  const out = run(
+    JSON.stringify({
+      context_window: { used_percentage: 74.6 },
       model: { display_name: 'Sonnet' },
-      workspace: { current_dir: '/tmp/demo' },
+      workspace: { current_dir: path.join(os.homedir(), 'demo') },
     }),
-    env: { HOME: '/tmp', PATH: `${nodeDir}:/usr/bin:/bin` },
-    encoding: 'utf8',
-  });
+  );
   assert.ok(out.includes('ctx 74% (/handoff)'));
   assert.ok(out.includes('Sonnet'));
+  assert.ok(out.includes('~'));
+  assert.ok(run(JSON.stringify({ context_window: { used_percentage: 90 } })).includes('/handoff & /clear!'));
+  assert.doesNotThrow(() => run('not json'));
+  assert.doesNotThrow(() => run(''));
+
+  const settings = JSON.parse(fs.readFileSync(path.join(home, '.claude/settings.json'), 'utf8'));
+  assert.equal(settings.statusLine.command, `node "${script}"`);
 });
 
 test('CLI subprocess --doctor smoke test', () => {
@@ -482,4 +490,31 @@ test('doctor handles CRLF rule files and flags plugin + npx duplicate installs',
   const report = runDoctor({ homeDir: home, cwd });
   assert.ok(report.checks.some((c) => c.area === 'duplicate-install' && c.level === 'WARN'));
   assert.ok(report.checks.some((c) => c.area === 'project-rules' && c.level === 'OK'));
+});
+
+test('uninstall cleans up a legacy bash statusline from an older install', () => {
+  const home = makeTempDir('agent-sdlc-legacy-sl-');
+  const claudeDir = path.join(home, '.claude');
+  fs.mkdirSync(claudeDir, { recursive: true });
+  const legacy = path.join(claudeDir, 'statusline-command.sh');
+  fs.writeFileSync(legacy, '#!/usr/bin/env bash\necho old\n');
+  fs.writeFileSync(
+    path.join(claudeDir, 'settings.json'),
+    JSON.stringify({ statusLine: { type: 'command', command: 'bash ~/.claude/statusline-command.sh' } }),
+  );
+  const manifestPath = path.join(home, '.agent-sdlc', 'manifest.json');
+  fs.mkdirSync(path.dirname(manifestPath), { recursive: true });
+  fs.writeFileSync(
+    manifestPath,
+    JSON.stringify({
+      version: '0.1.0',
+      files: { [legacy]: crypto.createHash('sha256').update(fs.readFileSync(legacy)).digest('hex') },
+      settings: { model: false, env: [], statusLine: true },
+    }),
+  );
+
+  runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
+  assert.equal(fs.existsSync(legacy), false);
+  const settings = JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8'));
+  assert.equal(settings.statusLine, undefined);
 });

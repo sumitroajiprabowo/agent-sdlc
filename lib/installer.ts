@@ -119,6 +119,15 @@ const CLAUDE_OPTIMIZE_ENV: Record<string, string> = {
   MAX_MCP_OUTPUT_TOKENS: '10000',
 };
 
+// Pre-TypeScript installs used a bash statusline; uninstall must still clean it up.
+const LEGACY_STATUSLINE_FILE = 'statusline-command.sh';
+const LEGACY_STATUSLINE_COMMAND = 'bash ~/.claude/statusline-command.sh';
+const STATUSLINE_FILE = 'agent-sdlc-statusline.mjs';
+
+function statuslineCommand(homeDir: string): string {
+  return `node "${path.join(homeDir, '.claude', STATUSLINE_FILE)}"`;
+}
+
 const PROJECT_GITIGNORE_ENTRIES = [
   '.claude/HANDOFF.md',
   'CLAUDE.local.md',
@@ -265,7 +274,7 @@ function saveManifest(homeDir: string, manifest: Manifest, version: string, dryR
 }
 
 /** Copy a managed file unless it exists with content we did not write (unless --force). */
-function installManagedFile(ctx: Context, src: string, dst: string, mode?: number): void {
+function installManagedFile(ctx: Context, src: string, dst: string): void {
   const srcHash = sha256(src);
   if (fs.existsSync(dst)) {
     const cur = sha256(dst);
@@ -274,7 +283,7 @@ function installManagedFile(ctx: Context, src: string, dst: string, mode?: numbe
       return;
     }
   }
-  copyFileAction(src, dst, ctx.dryRun, ctx.actions, mode);
+  copyFileAction(src, dst, ctx.dryRun, ctx.actions);
   ctx.manifest.files[dst] = srcHash;
 }
 
@@ -311,11 +320,10 @@ function removeEmptyDirs(dir: string, dryRun: boolean): void {
   if (fs.readdirSync(dir).length === 0) fs.rmdirSync(dir);
 }
 
-function copyFileAction(src: string, dst: string, dryRun: boolean, actions: string[], mode?: number): void {
+function copyFileAction(src: string, dst: string, dryRun: boolean, actions: string[]): void {
   if (!dryRun) {
     fs.mkdirSync(path.dirname(dst), { recursive: true });
     fs.copyFileSync(src, dst);
-    if (mode !== undefined) fs.chmodSync(dst, mode);
   }
   actions.push(`${dryRun ? '[dry-run] ' : ''}install ${dst}`);
 }
@@ -381,8 +389,8 @@ function applyClaudeOptimize(ctx: Context): void {
   const claudeDir = path.join(ctx.homeDir, '.claude');
   const settingsPath = path.join(claudeDir, 'settings.json');
   const backupPath = path.join(claudeDir, 'settings.json.agent-sdlc.bak');
-  const statuslineSrc = path.join(ctx.packageRoot, 'templates', 'claude', 'statusline-command.sh');
-  const statuslineDst = path.join(claudeDir, 'statusline-command.sh');
+  const statuslineSrc = path.join(ctx.packageRoot, 'dist', 'lib', 'statusline.js');
+  const statuslineDst = path.join(claudeDir, STATUSLINE_FILE);
   const { dryRun, actions, warnings } = ctx;
 
   let settings: ClaudeSettings = {};
@@ -420,11 +428,11 @@ function applyClaudeOptimize(ctx: Context): void {
     }
   }
 
-  installManagedFile(ctx, statuslineSrc, statuslineDst, 0o755);
+  installManagedFile(ctx, statuslineSrc, statuslineDst);
   if (!settings.statusLine) {
     settings.statusLine = {
       type: 'command',
-      command: 'bash ~/.claude/statusline-command.sh',
+      command: statuslineCommand(ctx.homeDir),
     };
     rec.statusLine = true;
   }
@@ -455,7 +463,8 @@ function revertClaudeOptimize(ctx: Context): void {
       if (settings.env && settings.env[key] === CLAUDE_OPTIMIZE_ENV[key]) delete settings.env[key];
     }
     if (settings.env && Object.keys(settings.env).length === 0) delete settings.env;
-    if (rec.statusLine && settings.statusLine?.command === 'bash ~/.claude/statusline-command.sh') {
+    const slCommand = settings.statusLine?.command;
+    if (rec.statusLine && (slCommand === statuslineCommand(ctx.homeDir) || slCommand === LEGACY_STATUSLINE_COMMAND)) {
       delete settings.statusLine;
     }
     if (!ctx.dryRun) {
@@ -567,9 +576,10 @@ export function runInstall(options: RunOptions = {}): RunResult {
         revertClaudeOptimize(ctx);
         uninstallManagedFile(
           ctx,
-          path.join(packageRoot, 'templates', 'claude', 'statusline-command.sh'),
-          path.join(homeDir, '.claude', 'statusline-command.sh'),
+          path.join(packageRoot, 'dist', 'lib', 'statusline.js'),
+          path.join(homeDir, '.claude', STATUSLINE_FILE),
         );
+        uninstallManagedFile(ctx, null, path.join(homeDir, '.claude', LEGACY_STATUSLINE_FILE));
       } else if (optimize) {
         applyClaudeOptimize(ctx);
       }

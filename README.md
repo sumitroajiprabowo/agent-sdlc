@@ -147,7 +147,7 @@ Every installed file is recorded with a hash in `~/.agent-sdlc/manifest.json`. T
 - **Slash command name clashes** (`/review`, `/ship`, `/qa` vs. built-ins or other plugins): installed commands never overwrite existing files. If a clash remains, rename the installed `.md` file; plugin installs are namespaced (`/agent-sdlc:review`).
 - **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx agent-sdlc --claude --uninstall`.
 - **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
-- **Windows**: not supported yet (POSIX paths, `bash` statusline). Use WSL.
+- **Windows, macOS, Linux**: all three are tested in CI on Node 20 and 22. The installer and the `--optimize` statusline need only Node.js (no `bash` or `jq`). Paths use your home directory (`%USERPROFILE%` on Windows). The Cursor and OpenCode directories are unverified on Windows.
 - **Requires Node.js >=20.**
 
 ## Verifying the token savings yourself
