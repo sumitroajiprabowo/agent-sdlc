@@ -16,7 +16,7 @@ First release published from CI via npm trusted publishing (OIDC, with provenanc
 - Remaining `agent-sdlc` identifiers renamed to `sdlc-kit`: the Claude plugin and marketplace name (reinstall the plugin with `/plugin install sdlc-kit@sdlc-kit`), the `~/.sdlc-kit/` manifest and local prompt directory, `sdlc-kit-statusline.mjs`, and `settings.json.sdlc-kit.bak`. Installs made with 0.1.0 are migrated on the next run, and `--uninstall` and `--doctor` still recognize the old names.
 
 ### Added
-- Manifest (`~/.agent-sdlc/manifest.json`) tracking installed files; `--force` flag.
+- Manifest (`~/.sdlc-kit/manifest.json`) tracking installed files; `--force` flag.
 - Slash commands now also install for `--cursor` (`~/.cursor/commands/`) and `--opencode` (`~/.config/opencode/command/`).
 - `--doctor` detects outdated installs and plugin + npx duplicate installs.
 - Release workflow (tag -> `npm publish --provenance`), macOS in CI matrix, `SECURITY.md`, issue template.
@@ -24,7 +24,7 @@ First release published from CI via npm trusted publishing (OIDC, with provenanc
 ### Changed
 - The npm package is published as `sdlc-kit` (the name `agent-sdlc` is taken); the installed command is `sdlc-kit`.
 - Source migrated to TypeScript (`strict`), compiled to `dist/` by `tsc`; the `bin` entry is now `dist/bin/cli.js`. No runtime dependencies were added. CI runs `npm run typecheck`.
-- The `--optimize` statusline is now a Node script (`~/.claude/agent-sdlc-statusline.mjs`) instead of bash, so it works on Windows without `jq`. `--uninstall` still removes the old `statusline-command.sh` and its settings entry.
+- The `--optimize` statusline is now a Node script (`~/.claude/sdlc-kit-statusline.mjs`) instead of bash, so it works on Windows without `jq`. `--uninstall` still removes the old `statusline-command.sh` and its settings entry.
 - CI now also runs on Windows; `.gitattributes` forces LF line endings.
 - Install never overwrites files it did not install (use `--force`); uninstall removes only unmodified managed files.
 - `--optimize` keeps your existing `model`/`env`; `--uninstall` reverts only what it added.
