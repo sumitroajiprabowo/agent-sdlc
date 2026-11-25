@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "bin": {
-    "agent-sdlc": "./dist/bin/cli.js"
+    "agent-sdlc": "dist/bin/cli.js"
   },
   "files": [
     "dist",
@@ -40,7 +40,7 @@
   "author": "sumitroajiprabowo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sumitroajiprabowo/agent-sdlc.git"
+    "url": "git+https://github.com/sumitroajiprabowo/agent-sdlc.git"
   },
   "bugs": {
     "url": "https://github.com/sumitroajiprabowo/agent-sdlc/issues"
