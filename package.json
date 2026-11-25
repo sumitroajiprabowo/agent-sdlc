@@ -1,0 +1,46 @@
+{
+  "name": "agent-sdlc",
+  "version": "0.1.0",
+  "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for Claude Code, Codex, Antigravity, and Local LLMs.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "agent-sdlc": "./bin/cli.mjs"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "skills",
+    "commands",
+    "templates",
+    ".claude-plugin",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "claude-code",
+    "codex",
+    "antigravity",
+    "llm",
+    "sdlc",
+    "agent-skills",
+    "token-optimization",
+    "orchestrator"
+  ],
+  "author": "sumitroajiprabowo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sumitroajiprabowo/agent-sdlc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sumitroajiprabowo/agent-sdlc/issues"
+  },
+  "homepage": "https://github.com/sumitroajiprabowo/agent-sdlc#readme"
+}

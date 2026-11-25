@@ -1,0 +1,12 @@
+{
+  "name": "agent-sdlc",
+  "version": "0.1.0",
+  "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for AI coding agents.",
+  "author": {
+    "name": "sumitroajiprabowo"
+  },
+  "repository": "https://github.com/sumitroajiprabowo/agent-sdlc",
+  "license": "MIT",
+  "skills": "./skills",
+  "commands": "./commands"
+}
