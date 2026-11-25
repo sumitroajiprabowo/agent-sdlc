@@ -5,7 +5,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: agent-sdlc version
+      label: sdlc-kit version
       description: Output of `npx sdlc-kit --version`
     validations: { required: true }
   - type: input

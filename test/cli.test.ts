@@ -183,7 +183,6 @@ test('public repo leakage check: zero internal/company references in shipped fil
 test('CLI subprocess smoke tests (--help, --version, invalid flag)', () => {
   const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'dist/bin/cli.js');
   const helpOut = execFileSync(process.execPath, [cliPath, '--help'], { encoding: 'utf8' });
-  assert.ok(helpOut.includes('agent-sdlc'));
   assert.ok(helpOut.includes('npx sdlc-kit'));
   assert.ok(helpOut.includes('--claude'));
 

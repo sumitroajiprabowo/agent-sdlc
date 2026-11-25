@@ -4,11 +4,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/installer.js';
 
-const HELP_TEXT = `agent-sdlc — SDLC skills, slash commands & multi-agent orchestrator protocol
+const HELP_TEXT = `sdlc-kit — SDLC skills, slash commands & multi-agent orchestrator protocol
 
 Usage:
   npx sdlc-kit [options]
-  npx github:sumitroajiprabowo/agent-sdlc [options]
+  npx github:sumitroajiprabowo/sdlc-kit [options]
 
 Targets (auto-detected if omitted):
   --claude            Install skills & 9 slash commands to ~/.claude/

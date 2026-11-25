@@ -1,4 +1,4 @@
-# agent-sdlc
+# sdlc-kit
 
 Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDLC (plan, code, QA, ship, incident response). Installs into Claude Code, Codex, Antigravity, Cursor, OpenCode, or any local LLM. TypeScript, no runtime dependencies.
 
@@ -17,55 +17,56 @@ Long sessions, bloated global instructions, full test logs, and whole chat histo
 
 ```bash
 # Auto-detect installed agents on your machine
-npx github:sumitroajiprabowo/agent-sdlc
-
-# Not published to npm yet. Once it is:
 npx sdlc-kit
 ```
+
+The package is published on npm as [`sdlc-kit`](https://www.npmjs.com/package/sdlc-kit), with provenance, from this repository's CI. To run straight from GitHub instead: `npx github:sumitroajiprabowo/sdlc-kit`.
 
 ### Install for Specific Agents
 
 ```bash
 # Claude Code only (skills + 9 slash commands)
-npx github:sumitroajiprabowo/agent-sdlc --claude
+npx sdlc-kit --claude
 
 # Claude Code + token-saving preset: adds opusplan (only if you have no model set),
 # 200k context cap, tool search, auto-compact, and a statusline. Existing values are kept.
-npx github:sumitroajiprabowo/agent-sdlc --claude --optimize
+npx sdlc-kit --claude --optimize
 
 # Codex only
-npx github:sumitroajiprabowo/agent-sdlc --codex
+npx sdlc-kit --codex
 
 # Antigravity only
-npx github:sumitroajiprabowo/agent-sdlc --antigravity
+npx sdlc-kit --antigravity
 
 # Cursor or OpenCode (skills + 9 slash commands)
-npx github:sumitroajiprabowo/agent-sdlc --cursor
-npx github:sumitroajiprabowo/agent-sdlc --opencode
+npx sdlc-kit --cursor
+npx sdlc-kit --opencode
 
 # Local LLMs (Ollama / OpenCode / Aider / Cline) -> <800-token prompt
-npx github:sumitroajiprabowo/agent-sdlc --local
+npx sdlc-kit --local
 
 # Scaffold a project repository (docs/INDEX.md, ADR template, PR template, AGENTS.md + CLAUDE.md bridge, .gitignore)
-npx github:sumitroajiprabowo/agent-sdlc --project
+npx sdlc-kit --project
 
 # Run a read-only health & token-efficiency audit
-npx github:sumitroajiprabowo/agent-sdlc --doctor
+npx sdlc-kit --doctor
 
 # Install to all agents at once
-npx github:sumitroajiprabowo/agent-sdlc --all
+npx sdlc-kit --all
 ```
 
 ### Alternative Install Methods
 
 ```bash
 # Via skills CLI
-npx skills add sumitroajiprabowo/agent-sdlc
+npx skills add sumitroajiprabowo/sdlc-kit
 
 # Via Claude Code plugin marketplace
-/plugin marketplace add sumitroajiprabowo/agent-sdlc
+/plugin marketplace add sumitroajiprabowo/sdlc-kit
 /plugin install agent-sdlc@agent-sdlc
 ```
+
+> **Naming:** the project is **sdlc-kit** (npm package, command, and GitHub repo). Some internal identifiers keep the earlier name `agent-sdlc` for compatibility: the Claude plugin and marketplace name above, the `~/.agent-sdlc/` manifest directory, and the statusline and backup file names.
 
 ---
 

@@ -1,4 +1,4 @@
-# agent-sdlc — Project Instructions
+# sdlc-kit — Project Instructions
 
 ## Stack & Commands
 - **Runtime**: Node.js >=20 ESM, written in TypeScript and compiled with `tsc` to `dist/` (`0` runtime dependencies)
