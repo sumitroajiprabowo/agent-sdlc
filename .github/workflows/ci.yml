@@ -8,9 +8,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest, macos-latest]
         node-version: [20, 22]
     steps:
       - uses: actions/checkout@v4
@@ -21,3 +23,4 @@ jobs:
       - run: node bin/cli.mjs --help
       - run: node bin/cli.mjs --dry-run --all
       - run: node bin/cli.mjs --doctor
+      - run: npm pack --dry-run

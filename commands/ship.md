@@ -5,7 +5,7 @@ description: "Pre-PR checklist: targeted tests, diff/secret check, docs-as-code 
 Run the pre-PR shipping checklist:
 
 1. Run `git status -sb && git diff --stat` to verify no stray debug files, secrets, `.env`, or `.claude/HANDOFF.md` are staged or tracked.
-2. Run auto-detected **Quality Gates** (`sdlc-workflow/references/quality-gates.md`: Formatter, Lint & Typecheck, Vulnerability Audit, Secret Scan) and targeted tests ONLY for affected packages with bounded output (e.g. `| tail -n 50`). Report `SKIPPED (not installed)` honestly if a tool is missing; stop and report if any check fails.
+2. Run auto-detected **Quality Gates** (`references/quality-gates.md` in the `sdlc-workflow` skill: Formatter, Lint & Typecheck, Vulnerability Audit, Secret Scan) and targeted tests ONLY for affected packages with bounded output (e.g. `| tail -n 50`). Report `SKIPPED (not installed)` honestly if a tool is missing; stop and report if any check fails.
 3. **Docs-as-Code check (3 conditions)**:
    - API contract / DB schema / env var changed → verify the relevant doc is updated.
    - New architectural decision → remind the user to run `/adr`.

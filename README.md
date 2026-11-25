@@ -1,15 +1,15 @@
 # agent-sdlc
 
-Universal, token-efficient SDLC workflow **skills**, **slash commands**, and **multi-agent orchestrator protocol** for **Claude Code**, **Codex**, **Antigravity**, and **Local LLMs** — zero external dependencies, pure Node.js.
+Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDLC (plan, code, QA, ship, incident response). Installs into Claude Code, Codex, Antigravity, Cursor, OpenCode, or any local LLM. Plain Node.js, no dependencies.
 
-## Why `agent-sdlc`?
+## Why
 
-AI coding agents burn tokens when they carry bloated global instructions, run marathon sessions, dump full test logs, or pass entire chat histories between subagents. `agent-sdlc` packages proven engineering habits into lightweight, on-demand artifacts:
+Long sessions, bloated global instructions, full test logs, and whole chat histories passed between subagents all burn tokens. This package keeps the always-loaded part small and moves the detail into files that load only when needed:
 
-- **Low baseline overhead**: `sdlc-workflow` + `sdlc-orchestrator` use tiny YAML frontmatter and load full playbooks (and 8 on-demand `references/`) only when relevant.
-- **Slash commands stay 0-token until invoked**: `/spec`, `/start`, `/handoff`, `/pickup`, `/handoff-pr`, `/adr`, `/qa`, `/review`, `/ship`.
-- **Full 0 → Production SDLC**: repo setup, milestone slicing, 5-state frontend design, QA pyramid, bug vs prod hotfix, CI/CD, and zero-downtime DB migrations (*Expand & Contract*).
-- **Token-safe multi-agent orchestration**: fresh-context worker briefings and `<30-line` handoffs.
+- **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 8 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
+- **9 slash commands**: `/spec`, `/start`, `/handoff`, `/pickup`, `/handoff-pr`, `/adr`, `/qa`, `/review`, `/ship`.
+- **Covers repo setup to production**: milestone slicing, 5-state frontend checklist, QA pyramid, bugfix vs production hotfix, CI/CD, and Expand & Contract database migrations.
+- **Orchestrator protocol**: fresh-context worker briefings and worker reports under 30 lines.
 
 ---
 
@@ -19,7 +19,7 @@ AI coding agents burn tokens when they carry bloated global instructions, run ma
 # Auto-detect installed agents on your machine
 npx github:sumitroajiprabowo/agent-sdlc
 
-# Or after publishing to npm:
+# Not published to npm yet. Once it is:
 npx agent-sdlc
 ```
 
@@ -29,7 +29,8 @@ npx agent-sdlc
 # Claude Code only (skills + 9 slash commands)
 npx github:sumitroajiprabowo/agent-sdlc --claude
 
-# Claude Code + token-saving preset (opusplan, 200k cap, tool search, statusline)
+# Claude Code + token-saving preset: adds opusplan (only if you have no model set),
+# 200k context cap, tool search, auto-compact, and a statusline. Existing values are kept.
 npx github:sumitroajiprabowo/agent-sdlc --claude --optimize
 
 # Codex only
@@ -38,7 +39,7 @@ npx github:sumitroajiprabowo/agent-sdlc --codex
 # Antigravity only
 npx github:sumitroajiprabowo/agent-sdlc --antigravity
 
-# Cursor or OpenCode
+# Cursor or OpenCode (skills + 9 slash commands)
 npx github:sumitroajiprabowo/agent-sdlc --cursor
 npx github:sumitroajiprabowo/agent-sdlc --opencode
 
@@ -75,12 +76,12 @@ npx skills add sumitroajiprabowo/agent-sdlc
 | `--claude` | Install skills & 9 slash commands into `~/.claude/` |
 | `--codex` | Install skills into `~/.codex/skills/` and `~/.agents/skills/` |
 | `--antigravity` | Install skills into `~/.agents/skills/` |
-| `--cursor` | Install skills into `~/.cursor/skills/` |
-| `--opencode` | Install skills into `~/.config/opencode/skills/` and `~/.agents/skills/` |
-| `--local` | Install ultra-compact prompt (`<800` tokens) to `~/.agent-sdlc/LOCAL_PROMPT.md` |
+| `--cursor` | Install skills into `~/.cursor/skills/` and commands into `~/.cursor/commands/` |
+| `--opencode` | Install skills into `~/.config/opencode/skills/` and `~/.agents/skills/`, commands into `~/.config/opencode/command/` |
+| `--local` | Install a compact prompt (`<800` tokens) to `~/.agent-sdlc/LOCAL_PROMPT.md` |
 | `--project` | Scaffold non-destructive project templates (`docs/`, PR template, `AGENTS.md`, `CLAUDE.md -> @AGENTS.md`, `.gitignore`) |
 | `--all` | Install across `claude`, `codex`, `antigravity`, `cursor`, `opencode`, and `local` |
-| `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (preserving original `.bak`), keeps any model/env you already set, and adds `opusplan` (if no model is set), 200k context cap, tool search, auto-compact at 70%, bounded outputs, and context statusline |
+| `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (the original `.bak` is never overwritten), then adds only the keys you haven't set: `opusplan` model, 200k context cap, tool search, auto-compact at 70%, bounded outputs, and a context statusline. Run `--claude --uninstall` to revert just those keys |
 | `--doctor` | Run a read-only health & token-efficiency audit |
 | `--no-orchestrator` | Skip installing `sdlc-orchestrator` (single-agent workflow only) |
 | `--dry-run` | Preview actions without writing any files |
@@ -105,8 +106,8 @@ npx skills add sumitroajiprabowo/agent-sdlc
 - **Claude Code**: Use `/spec` (for big features), `/start #123`, `/handoff`, `/pickup`, `/handoff-pr`, `/adr`, `/qa`, `/review`, `/ship` directly. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
 - **Codex**: Invoke `$sdlc-workflow` or `$sdlc-orchestrator` in your prompt.
 - **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
-- **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically; reference `sdlc-workflow` or `sdlc-orchestrator` in chat/rules.
-- **OpenCode**: Skills in `~/.config/opencode/skills/` and `~/.agents/skills/` are discovered automatically.
+- **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
+- **OpenCode**: Skills in `~/.config/opencode/skills/` and `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/command/`.
 - **Local LLMs**: Load `~/.agent-sdlc/LOCAL_PROMPT.md` as your system prompt or project instruction.
 
 ---
@@ -127,11 +128,40 @@ npx skills add sumitroajiprabowo/agent-sdlc
 
 ---
 
+## What gets installed
+
+| Target | Skills | Slash commands |
+|---|---|---|
+| `--claude` | `~/.claude/skills/` | `~/.claude/commands/` |
+| `--codex` | `~/.codex/skills/`, `~/.agents/skills/` | none |
+| `--antigravity` | `~/.agents/skills/` | none |
+| `--cursor` | `~/.cursor/skills/` | `~/.cursor/commands/` |
+| `--opencode` | `~/.config/opencode/skills/`, `~/.agents/skills/` | `~/.config/opencode/command/` |
+| `--local` | `~/.agent-sdlc/LOCAL_PROMPT.md` | none |
+
+Every installed file is recorded with a hash in `~/.agent-sdlc/manifest.json`. The installer skips files it didn't create, and `--uninstall` removes only files that are unchanged since install.
+
+## Troubleshooting
+
+- **"Skipped ... not installed by agent-sdlc"**: a file with that name already exists (e.g. your own `review.md`). Keep it, rename ours, or pass `--force` to overwrite.
+- **Slash command name clashes** (`/review`, `/ship`, `/qa` vs. built-ins or other plugins): installed commands never overwrite existing files. If a clash remains, rename the installed `.md` file; plugin installs are namespaced (`/agent-sdlc:review`).
+- **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx agent-sdlc --claude --uninstall`.
+- **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
+- **Windows**: not supported yet (POSIX paths, `bash` statusline). Use WSL.
+- **Requires Node.js >=20.**
+
+## Verifying the token savings yourself
+
+No benchmark numbers are published; measure on your own setup. In Claude Code run `/context` in a fresh session before and after `npx agent-sdlc --claude` and compare the "Skills" and "Slash commands" rows (only frontmatter loads up-front). Run `npx agent-sdlc --doctor` for a baseline audit.
+
 ## Development & Tests
 
 ```bash
-npm test
+npm test                       # Node >=20, runs in temp dirs only
+node bin/cli.mjs --dry-run --all   # preview an install without writing
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 
 ## License
 

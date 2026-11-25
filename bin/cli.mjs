@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/installer.mjs';
 
-const HELP_TEXT = `agent-sdlc — Universal, token-efficient SDLC skills, commands & orchestrator protocol
+const HELP_TEXT = `agent-sdlc — SDLC skills, slash commands & multi-agent orchestrator protocol
 
 Usage:
   npx agent-sdlc [options]
@@ -14,14 +14,14 @@ Targets (auto-detected if omitted):
   --claude            Install skills & 9 slash commands to ~/.claude/
   --codex             Install skills to ~/.codex/skills/ and ~/.agents/skills/
   --antigravity       Install skills to ~/.agents/skills/
-  --cursor            Install skills to ~/.cursor/skills/
-  --opencode          Install skills to ~/.config/opencode/skills/ and ~/.agents/skills/
-  --local             Install ultra-compact prompt (<800 tokens) to ~/.agent-sdlc/LOCAL_PROMPT.md
+  --cursor            Install skills & commands to ~/.cursor/
+  --opencode          Install skills & commands to ~/.config/opencode/ and ~/.agents/skills/
+  --local             Install a compact prompt (<800 tokens) to ~/.agent-sdlc/LOCAL_PROMPT.md
   --project           Scaffold docs/, PR template, AGENTS.md, CLAUDE.md bridge & .gitignore
   --all               Install to claude, codex, antigravity, cursor, opencode, and local
 
 Options:
-  --optimize          (With --claude) Set opusplan, 200k cap, tool search & statusline in ~/.claude/settings.json
+  --optimize          (With --claude) Add opusplan, 200k cap, tool search & statusline to ~/.claude/settings.json (keeps your existing values)
   --doctor            Run a read-only health & token-efficiency audit
   --no-orchestrator   Skip installing the multi-agent sdlc-orchestrator skill
   --dry-run           Preview planned changes without writing files

@@ -427,3 +427,59 @@ test('--dry-run with existing manifest does not modify it', () => {
   assert.equal(fs.readFileSync(manifestPath, 'utf8'), before);
   assert.ok(fs.existsSync(path.join(home, '.claude/commands/start.md')));
 });
+
+test('--cursor and --opencode also install and uninstall the 9 slash commands', () => {
+  const home = makeTempDir('agent-sdlc-cmds-');
+  runInstall({ targets: ['cursor', 'opencode'], homeDir: home });
+  for (const cmd of COMMAND_FILES) {
+    assert.ok(fs.existsSync(path.join(home, '.cursor/commands', cmd)));
+    assert.ok(fs.existsSync(path.join(home, '.config/opencode/command', cmd)));
+  }
+  runInstall({ targets: ['cursor', 'opencode'], uninstall: true, homeDir: home });
+  for (const cmd of COMMAND_FILES) {
+    assert.equal(fs.existsSync(path.join(home, '.cursor/commands', cmd)), false);
+    assert.equal(fs.existsSync(path.join(home, '.config/opencode/command', cmd)), false);
+  }
+});
+
+test('versions stay in sync across package.json, plugin.json, and CHANGELOG', () => {
+  const read = (rel) => fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, rel), 'utf8');
+  const pkg = JSON.parse(read('package.json'));
+  const plugin = JSON.parse(read('.claude-plugin/plugin.json'));
+  assert.equal(plugin.version, pkg.version);
+  assert.match(read('CHANGELOG.md'), new RegExp(`^## \\[${pkg.version.replaceAll('.', '\\.')}\\]`, 'm'));
+  assert.equal(pkg.engines.node, '>=20.0.0');
+});
+
+test('token budget: slim frontmatter descriptions and short commands', () => {
+  const root = DEFAULT_PACKAGE_ROOT;
+  for (const skill of ['sdlc-workflow', 'sdlc-orchestrator']) {
+    const body = fs.readFileSync(path.join(root, 'skills', skill, 'SKILL.md'), 'utf8');
+    const desc = body.match(/^description:\s*"(.*)"\s*$/m)[1];
+    assert.ok(desc.length <= 400, `${skill} description is ${desc.length} chars`);
+  }
+  for (const cmd of COMMAND_FILES) {
+    const lines = fs.readFileSync(path.join(root, 'commands', cmd), 'utf8').split('\n').length;
+    assert.ok(lines <= 30, `${cmd} has ${lines} lines`);
+  }
+});
+
+test('doctor handles CRLF rule files and flags plugin + npx duplicate installs', () => {
+  const home = makeTempDir('agent-sdlc-dup-');
+  const cwd = makeTempDir('agent-sdlc-dup-cwd-');
+  fs.mkdirSync(path.join(cwd, '.claude/rules'), { recursive: true });
+  fs.writeFileSync(
+    path.join(cwd, '.claude/rules/scoped.md'),
+    `---\r\npaths:\r\n  - "src/**"\r\n---\r\n${'x'.repeat(20000)}`,
+  );
+  runInstall({ targets: ['claude'], homeDir: home });
+  const pluginsDir = path.join(home, '.claude/plugins');
+  fs.mkdirSync(pluginsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(pluginsDir, 'installed_plugins.json'),
+    JSON.stringify({ plugins: { 'agent-sdlc@agent-sdlc': [{}] } }),
+  );
+  const report = runDoctor({ homeDir: home, cwd });
+  assert.ok(report.checks.some((c) => c.area === 'duplicate-install' && c.level === 'WARN'));
+  assert.ok(report.checks.some((c) => c.area === 'project-rules' && c.level === 'OK'));
+});
