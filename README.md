@@ -20,7 +20,7 @@ Long sessions, bloated global instructions, full test logs, and whole chat histo
 npx github:sumitroajiprabowo/agent-sdlc
 
 # Not published to npm yet. Once it is:
-npx agent-sdlc
+npx @sumitroajiprabowo/agent-sdlc
 ```
 
 ### Install for Specific Agents
@@ -145,14 +145,14 @@ Every installed file is recorded with a hash in `~/.agent-sdlc/manifest.json`. T
 
 - **"Skipped ... not installed by agent-sdlc"**: a file with that name already exists (e.g. your own `review.md`). Keep it, rename ours, or pass `--force` to overwrite.
 - **Slash command name clashes** (`/review`, `/ship`, `/qa` vs. built-ins or other plugins): installed commands never overwrite existing files. If a clash remains, rename the installed `.md` file; plugin installs are namespaced (`/agent-sdlc:review`).
-- **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx agent-sdlc --claude --uninstall`.
+- **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx @sumitroajiprabowo/agent-sdlc --claude --uninstall`.
 - **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
 - **Windows, macOS, Linux**: all three are tested in CI on Node 20 and 22. The installer and the `--optimize` statusline need only Node.js (no `bash` or `jq`). Paths use your home directory (`%USERPROFILE%` on Windows). The Cursor and OpenCode directories are unverified on Windows.
 - **Requires Node.js >=20.**
 
 ## Verifying the token savings yourself
 
-No benchmark numbers are published; measure on your own setup. In Claude Code run `/context` in a fresh session before and after `npx agent-sdlc --claude` and compare the "Skills" and "Slash commands" rows (only frontmatter loads up-front). Run `npx agent-sdlc --doctor` for a baseline audit.
+No benchmark numbers are published; measure on your own setup. In Claude Code run `/context` in a fresh session before and after `npx @sumitroajiprabowo/agent-sdlc --claude` and compare the "Skills" and "Slash commands" rows (only frontmatter loads up-front). Run `npx @sumitroajiprabowo/agent-sdlc --doctor` for a baseline audit.
 
 ## Development & Tests
 
