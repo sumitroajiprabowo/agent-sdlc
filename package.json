@@ -5,11 +5,11 @@
   "type": "module",
   "license": "MIT",
   "bin": {
-    "agent-sdlc": "./bin/cli.mjs"
+    "agent-sdlc": "./dist/bin/cli.js"
   },
   "files": [
-    "bin",
-    "lib",
+    "dist",
+    "!dist/test",
     "skills",
     "commands",
     "templates",
@@ -19,10 +19,13 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
-    "test": "node --test test/*.test.mjs"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build",
+    "test": "npm run build && node --test dist/test/cli.test.js"
   },
   "keywords": [
     "claude-code",
@@ -42,5 +45,9 @@
   "bugs": {
     "url": "https://github.com/sumitroajiprabowo/agent-sdlc/issues"
   },
-  "homepage": "https://github.com/sumitroajiprabowo/agent-sdlc#readme"
+  "homepage": "https://github.com/sumitroajiprabowo/agent-sdlc#readme",
+  "devDependencies": {
+    "@types/node": "^22.20.6",
+    "typescript": "~5.9.0"
+  }
 }

@@ -1,0 +1,27 @@
+name: Bug report
+description: Something in the installer, doctor, skills, or commands misbehaves
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: agent-sdlc version
+      description: Output of `npx agent-sdlc --version`
+    validations: { required: true }
+  - type: input
+    id: env
+    attributes:
+      label: Node version and OS
+    validations: { required: true }
+  - type: textarea
+    id: command
+    attributes:
+      label: Command you ran
+      render: shell
+    validations: { required: true }
+  - type: textarea
+    id: output
+    attributes:
+      label: Output of `--doctor` and what you expected
+      render: text
+    validations: { required: true }
