@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -329,4 +330,100 @@ test('CLI subprocess --doctor smoke test', () => {
   const out = execFileSync(process.execPath, [cliPath, '--doctor'], { encoding: 'utf8' });
   assert.ok(out.includes('agent-sdlc --doctor'));
   assert.ok(out.includes('Summary:'));
+});
+
+test('install never clobbers a user-owned command; --force overrides', () => {
+  const home = makeTempDir('agent-sdlc-noclobber-');
+  const review = path.join(home, '.claude/commands/review.md');
+  fs.mkdirSync(path.dirname(review), { recursive: true });
+  fs.writeFileSync(review, 'my own review command\n');
+
+  const res = runInstall({ targets: ['claude'], homeDir: home });
+  assert.equal(fs.readFileSync(review, 'utf8'), 'my own review command\n');
+  assert.ok(res.warnings.some((w) => w.includes('review.md') && w.includes('--force')));
+
+  runInstall({ targets: ['claude'], homeDir: home, force: true });
+  assert.notEqual(fs.readFileSync(review, 'utf8'), 'my own review command\n');
+});
+
+test('uninstall keeps files modified after install and removes the manifest when done', () => {
+  const home = makeTempDir('agent-sdlc-uninst-');
+  runInstall({ targets: ['claude', 'local'], homeDir: home });
+  assert.ok(fs.existsSync(path.join(home, '.agent-sdlc/manifest.json')));
+
+  const edited = path.join(home, '.claude/commands/ship.md');
+  fs.appendFileSync(edited, '\n# my tweak\n');
+  const res = runInstall({ targets: ['claude', 'local'], uninstall: true, homeDir: home });
+
+  assert.ok(fs.existsSync(edited));
+  assert.ok(res.warnings.some((w) => w.includes('ship.md') && w.includes('modified')));
+  assert.equal(fs.existsSync(path.join(home, '.claude/commands/start.md')), false);
+  assert.equal(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow')), false);
+  assert.equal(fs.existsSync(path.join(home, '.agent-sdlc/LOCAL_PROMPT.md')), false);
+});
+
+test('uninstall removes legacy (pre-manifest) installs only when content matches the package', () => {
+  const home = makeTempDir('agent-sdlc-legacy-');
+  runInstall({ targets: ['claude'], homeDir: home });
+  fs.rmSync(path.join(home, '.agent-sdlc'), { recursive: true });
+  fs.writeFileSync(path.join(home, '.claude/commands/qa.md'), 'user rewrote this\n');
+
+  runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
+  assert.equal(fs.existsSync(path.join(home, '.claude/commands/adr.md')), false);
+  assert.ok(fs.existsSync(path.join(home, '.claude/commands/qa.md')));
+});
+
+test('--optimize keeps user model/env and --uninstall reverts only what it added', () => {
+  const home = makeTempDir('agent-sdlc-revert-');
+  const claudeDir = path.join(home, '.claude');
+  fs.mkdirSync(claudeDir, { recursive: true });
+  const settingsPath = path.join(claudeDir, 'settings.json');
+  fs.writeFileSync(
+    settingsPath,
+    JSON.stringify({ model: 'opus', env: { BASH_MAX_OUTPUT_LENGTH: '99999', KEEP: '1' }, theme: 'dark' }),
+  );
+
+  const res = runInstall({ targets: ['claude'], optimize: true, homeDir: home });
+  const optimized = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  assert.equal(optimized.model, 'opus');
+  assert.equal(optimized.env.BASH_MAX_OUTPUT_LENGTH, '99999');
+  assert.equal(optimized.env.ENABLE_TOOL_SEARCH, 'auto:5');
+  assert.ok(res.warnings.some((w) => w.includes('Kept existing model')));
+
+  runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
+  const reverted = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  assert.deepEqual(reverted, { model: 'opus', env: { BASH_MAX_OUTPUT_LENGTH: '99999', KEEP: '1' }, theme: 'dark' });
+  assert.equal(fs.existsSync(path.join(claudeDir, 'statusline-command.sh')), false);
+});
+
+test('upgrade prunes stale unmodified files and doctor flags an outdated install', () => {
+  const home = makeTempDir('agent-sdlc-upgrade-');
+  runInstall({ targets: ['claude'], homeDir: home });
+  const stale = path.join(home, '.claude/skills/sdlc-workflow/references/old-removed.md');
+  fs.writeFileSync(stale, 'from an older version\n');
+  const manifestPath = path.join(home, '.agent-sdlc/manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  
+  manifest.files[stale] = crypto.createHash('sha256').update('from an older version\n').digest('hex');
+  manifest.version = '0.0.1';
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+
+  const cwd = makeTempDir('agent-sdlc-upgrade-cwd-');
+  const before = runDoctor({ homeDir: home, cwd });
+  assert.ok(before.checks.some((c) => c.area === 'version' && c.level === 'WARN'));
+
+  runInstall({ targets: ['claude'], homeDir: home });
+  assert.equal(fs.existsSync(stale), false);
+  const after = runDoctor({ homeDir: home, cwd });
+  assert.ok(after.checks.some((c) => c.area === 'version' && c.level === 'OK'));
+});
+
+test('--dry-run with existing manifest does not modify it', () => {
+  const home = makeTempDir('agent-sdlc-dry-manifest-');
+  runInstall({ targets: ['claude'], homeDir: home });
+  const manifestPath = path.join(home, '.agent-sdlc/manifest.json');
+  const before = fs.readFileSync(manifestPath, 'utf8');
+  runInstall({ targets: ['claude'], uninstall: true, dryRun: true, homeDir: home });
+  assert.equal(fs.readFileSync(manifestPath, 'utf8'), before);
+  assert.ok(fs.existsSync(path.join(home, '.claude/commands/start.md')));
 });

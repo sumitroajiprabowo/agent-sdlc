@@ -25,7 +25,8 @@ Options:
   --doctor            Run a read-only health & token-efficiency audit
   --no-orchestrator   Skip installing the multi-agent sdlc-orchestrator skill
   --dry-run           Preview planned changes without writing files
-  --uninstall         Remove agent-sdlc managed files from selected targets
+  --uninstall         Remove agent-sdlc managed files from selected targets (skips files you edited)
+  --force             Overwrite/remove files even if they were not installed by agent-sdlc
   -h, --help          Show help
   -v, --version       Show version
 `;

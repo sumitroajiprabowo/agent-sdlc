@@ -80,11 +80,12 @@ npx skills add sumitroajiprabowo/agent-sdlc
 | `--local` | Install ultra-compact prompt (`<800` tokens) to `~/.agent-sdlc/LOCAL_PROMPT.md` |
 | `--project` | Scaffold non-destructive project templates (`docs/`, PR template, `AGENTS.md`, `CLAUDE.md -> @AGENTS.md`, `.gitignore`) |
 | `--all` | Install across `claude`, `codex`, `antigravity`, `cursor`, `opencode`, and `local` |
-| `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (preserving original `.bak`) and enables `opusplan`, 200k context cap, tool search, auto-compact at 70%, bounded outputs, and context statusline |
+| `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (preserving original `.bak`), keeps any model/env you already set, and adds `opusplan` (if no model is set), 200k context cap, tool search, auto-compact at 70%, bounded outputs, and context statusline |
 | `--doctor` | Run a read-only health & token-efficiency audit |
 | `--no-orchestrator` | Skip installing `sdlc-orchestrator` (single-agent workflow only) |
 | `--dry-run` | Preview actions without writing any files |
-| `--uninstall` | Remove `agent-sdlc` managed files from selected targets |
+| `--force` | Overwrite or remove files even if they were not installed (or were edited after install) |
+| `--uninstall` | Remove only files `agent-sdlc` installed and you haven't edited; reverts the settings `--optimize` added |
 
 ---
 
