@@ -15,6 +15,7 @@
     "!dist/test",
     "skills",
     "commands",
+    "agents",
     "templates",
     ".claude-plugin",
     "README.md",

@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an improvement or a new command, skill or agent target
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow pain does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What should sdlc-kit do? Keep token cost in mind.
+    validations:
+      required: true
+  - type: input
+    id: agent
+    attributes:
+      label: Agent / tool
+      description: Claude Code, Codex, Cursor, OpenCode, Antigravity or local

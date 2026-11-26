@@ -6,6 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import {
+  AGENT_FILES,
   COMMAND_FILES,
   DEFAULT_PACKAGE_ROOT,
   RESERVED_COMMAND_NAMES,
@@ -625,4 +626,48 @@ test('a 0.1.0 install under the agent-sdlc names is migrated, then uninstalls cl
   assert.equal(fs.existsSync(path.join(home, '.sdlc-kit')), false);
   const after = JSON.parse(fs.readFileSync(path.join(claudeDir, 'settings.json'), 'utf8'));
   assert.equal(after.statusLine, undefined);
+});
+
+test('--claude installs the reviewer/tester subagents, keeps edited ones on uninstall', () => {
+  const home = makeTempDir('sdlc-kit-agents-');
+  runInstall({ targets: ['claude'], homeDir: home });
+  for (const f of AGENT_FILES) {
+    assert.ok(fs.existsSync(path.join(home, '.claude/agents', f)));
+  }
+  fs.writeFileSync(path.join(home, '.claude/agents/sdlc-tester.md'), 'user rewrote this\n');
+  runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
+  assert.equal(fs.existsSync(path.join(home, '.claude/agents/sdlc-reviewer.md')), false);
+  assert.ok(fs.existsSync(path.join(home, '.claude/agents/sdlc-tester.md')));
+});
+
+test('subagents have quoted frontmatter and stay under 30 lines', () => {
+  for (const f of AGENT_FILES) {
+    const content = fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'agents', f), 'utf8');
+    const match = content.match(/^---\n([\s\S]*?)\n---\n/);
+    assert.ok(match, `Missing frontmatter in agents/${f}`);
+    const fm = match[1] ?? '';
+    assert.ok(fm.includes(`name: ${f.replace(/\.md$/, '')}`), `name mismatch in agents/${f}`);
+    assert.match(fm, /^description: ".*"$/m);
+    assert.match(fm, /^tools: /m);
+    assert.ok(content.split('\n').length <= 30, `agents/${f} exceeds 30 lines`);
+  }
+});
+
+test('--codex installs and uninstalls the 9 prompts', () => {
+  const home = makeTempDir('sdlc-kit-codex-');
+  runInstall({ targets: ['codex'], homeDir: home });
+  for (const cmd of COMMAND_FILES) {
+    assert.ok(fs.existsSync(path.join(home, '.codex/prompts', cmd)));
+  }
+  runInstall({ targets: ['codex'], uninstall: true, homeDir: home });
+  for (const cmd of COMMAND_FILES) {
+    assert.equal(fs.existsSync(path.join(home, '.codex/prompts', cmd)), false);
+  }
+});
+
+test('review and qa commands loop back to Stage: IMPLEMENT on failure', () => {
+  for (const f of ['sdlc-review.md', 'sdlc-qa.md']) {
+    const c = fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'commands', f), 'utf8');
+    assert.ok(c.includes('Stage: IMPLEMENT'), `${f} must set Stage: IMPLEMENT on failure`);
+  }
 });

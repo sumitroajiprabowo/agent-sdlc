@@ -10,6 +10,7 @@
 ## Conventions
 - Keep `lib/installer.ts` dependency-free (`node:crypto`, `node:fs`, `node:os`, `node:path`, `node:url`).
 - All tests in `test/cli.test.ts` must use `fs.mkdtempSync` temp dirs — never touch real `~/.claude` or `~/.agents`.
+- New subagents must be added to `AGENT_FILES` in `lib/installer.ts` (files in `agents/`, <=30 lines) and counted in `README.md` / `bin/cli.ts`.
 - Keep `skills/*/SKILL.md` under 100 lines and compliant with `agentskills.io` frontmatter rules.
 - New slash commands must be added to `COMMAND_FILES` in `lib/installer.ts` and counted in `README.md` / `bin/cli.ts`.
 - Never commit private/internal references; the leakage test enforces this automatically.

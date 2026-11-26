@@ -15,7 +15,7 @@ license: MIT
   → ctx ≥70%: /sdlc-handoff → /clear → /sdlc-pickup   (personal)
   → team handoff: push WIP → /sdlc-handoff-pr     (Draft PR / Issue comment)
   → key arch decision: /sdlc-adr <title>
-  → /sdlc-qa → /sdlc-review → /sdlc-ship → review + CI → merge → /clear
+  → /sdlc-qa → /sdlc-review (fail/changes → back to IMPLEMENT) → /sdlc-ship → CI → merge → /clear
 ```
 
 ## Phase 0 — Repo Foundation

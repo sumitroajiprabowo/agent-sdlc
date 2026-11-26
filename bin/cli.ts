@@ -11,8 +11,8 @@ Usage:
   npx github:sumitroajiprabowo/sdlc-kit [options]
 
 Targets (auto-detected if omitted):
-  --claude            Install skills & 9 slash commands to ~/.claude/
-  --codex             Install skills to ~/.codex/skills/ and ~/.agents/skills/
+  --claude            Install skills, 9 slash commands & 2 subagents to ~/.claude/
+  --codex             Install skills & 9 prompts to ~/.codex/ and ~/.agents/skills/
   --antigravity       Install skills to ~/.agents/skills/
   --cursor            Install skills & commands to ~/.cursor/
   --opencode          Install skills & commands to ~/.config/opencode/ and ~/.agents/skills/

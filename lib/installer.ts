@@ -17,7 +17,7 @@ function findPackageRoot(start: string): string {
 export const DEFAULT_PACKAGE_ROOT = findPackageRoot(__dirname);
 
 export type Target = 'claude' | 'codex' | 'antigravity' | 'cursor' | 'opencode' | 'local' | 'project';
-type CommandTarget = 'claude' | 'cursor' | 'opencode';
+type CommandTarget = 'claude' | 'codex' | 'cursor' | 'opencode';
 
 export interface InstallerOptions {
   targets: Target[];
@@ -102,6 +102,7 @@ export const COMMAND_FILES = [
   'sdlc-review.md',
   'sdlc-ship.md',
 ];
+export const AGENT_FILES = ['sdlc-reviewer.md', 'sdlc-tester.md'];
 
 // Pre-0.2.0 unprefixed names; removed on install/uninstall when still unmodified.
 const LEGACY_COMMAND_FILES = COMMAND_FILES.map((f) => f.replace(/^sdlc-/, ''));
@@ -115,6 +116,7 @@ export const RESERVED_COMMAND_NAMES = [
 // Agents with a custom slash-command directory that accepts our markdown commands.
 const COMMAND_DIRS: Record<CommandTarget, string[]> = {
   claude: ['.claude', 'commands'],
+  codex: ['.codex', 'prompts'],
   cursor: ['.cursor', 'commands'],
   opencode: ['.config', 'opencode', 'command'],
 };
@@ -623,10 +625,24 @@ export function runInstall(options: RunOptions = {}): RunResult {
     }
   };
 
+  const syncAgents = (): void => {
+    const agentDir = path.join(homeDir, '.claude', 'agents');
+    for (const agent of AGENT_FILES) {
+      const src = path.join(packageRoot, 'agents', agent);
+      const dst = path.join(agentDir, agent);
+      if (uninstall) {
+        uninstallManagedFile(ctx, src, dst);
+      } else {
+        installManagedFile(ctx, src, dst);
+      }
+    }
+  };
+
   for (const target of targets) {
     if (target === 'claude') {
       addSkillsOnce(path.join(homeDir, '.claude', 'skills'));
       syncCommands('claude');
+      syncAgents();
       if (uninstall) {
         revertClaudeOptimize(ctx);
         uninstallManagedFile(
@@ -642,6 +658,7 @@ export function runInstall(options: RunOptions = {}): RunResult {
     } else if (target === 'codex') {
       addSkillsOnce(path.join(homeDir, '.codex', 'skills'));
       addSkillsOnce(path.join(homeDir, '.agents', 'skills'));
+      syncCommands('codex');
     } else if (target === 'antigravity') {
       addSkillsOnce(path.join(homeDir, '.agents', 'skills'));
     } else if (target === 'cursor') {
@@ -735,6 +752,14 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
       cmdCount === COMMAND_FILES.length ? 'OK' : 'WARN',
       'claude-commands',
       `${cmdCount}/${COMMAND_FILES.length} slash commands installed in ~/.claude/commands/`,
+    );
+    const agentCount = AGENT_FILES.filter((f) =>
+      fs.existsSync(path.join(claudeDir, 'agents', f)),
+    ).length;
+    add(
+      agentCount === AGENT_FILES.length ? 'OK' : 'WARN',
+      'claude-agents',
+      `${agentCount}/${AGENT_FILES.length} subagents installed in ~/.claude/agents/`,
     );
 
     const skillsDir = path.join(claudeDir, 'skills');

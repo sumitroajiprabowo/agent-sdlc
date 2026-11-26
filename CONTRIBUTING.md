@@ -16,6 +16,7 @@ Keep this project small, with no runtime dependencies.
 - Run before pushing: `npm run typecheck && npm test && node dist/bin/cli.js --help && node dist/bin/cli.js --doctor && npm pack --dry-run`.
 
 ## Adding or changing things
+- **New subagent**: add `agents/<name>.md` (frontmatter `name`, quoted `description`, `tools`; <=30 lines) **and** list it in `AGENT_FILES` in `lib/installer.ts`; update the counts in `README.md` and `bin/cli.ts`.
 - **New slash command**: add `commands/<name>.md` (with a `description:` frontmatter line, <=30 lines) **and** list it in `COMMAND_FILES` in `lib/installer.ts`; update the command counts in `README.md` and `bin/cli.ts`.
 - **New skill reference**: add it under `skills/<skill>/references/` and link it from that skill's `SKILL.md` and the README.
 - **Installer changes**: files go through `installManagedFile` / `uninstallManagedFile` so the manifest stays accurate; add a test that uses `fs.mkdtempSync`. A new project gitignore entry goes in `PROJECT_GITIGNORE_ENTRIES` and in the `--doctor` check. `lib/statusline.ts` must stay self-contained (it is copied to `~/.claude/` as-is).
