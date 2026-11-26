@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Size routing (`S` / `M` / `L`) in `/sdlc-start`.
+- Explicit approval gate in `/sdlc-spec` before proposing issues or writing code.
+- Per-task gitignored artifacts in `.claude/tasks/<slug>/` and `Task | Stage | Size` resume state in `.claude/HANDOFF.md`.
+- Session cost (`$0.42`) and input/output token counts in the `--optimize` statusline.
+
+### Documentation
+- README hero with an animated terminal demo (`assets/demo.svg`) and badges.
+- README, skills, project and local templates, and CONTRIBUTING describe the size routing, approval gate, and task state flow.
+
+### Fixed
+- Statusline threshold hints now point to `/sdlc-handoff` instead of `/handoff`.
+
 ## [0.2.0] - 2026-11-26
 
 ### Changed

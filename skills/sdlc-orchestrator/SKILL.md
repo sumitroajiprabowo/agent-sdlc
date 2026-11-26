@@ -10,7 +10,7 @@ Follow this contract whenever coordinating multiple agents (subagents, swarms, o
 
 ## 1. Roles & Model Tiering
 
-- **Planner / Orchestrator** (strongest reasoning model): reads Issue/spec, writes `docs/plans/<id>.md` if needed, splits work into independent subtasks, reviews final diffs.
+- **Planner / Orchestrator** (strongest reasoning model): reads Issue/spec, writes `docs/plans/<id>.md` if needed (working artifacts in gitignored `.claude/tasks/<slug>/`), splits work into independent subtasks, reviews final diffs.
 - **Worker** (fast, cost-effective model — e.g., Sonnet, Codex, Local LLM): implements **exactly 1 subtask** in a fresh context, runs targeted tests, returns a `<30-line` report.
 - **Verifier / QA** (fast model): inspects `git diff`, runs lint/typecheck/tests, checks 5 UI states (if FE) and security hygiene, returns `PASS` or `FAIL` with exact failing lines.
 

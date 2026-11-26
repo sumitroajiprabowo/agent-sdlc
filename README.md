@@ -1,4 +1,22 @@
+<div align="center">
+
 # sdlc-kit
+
+**Ship features with AI agents without burning tokens: plan → code → QA → ship, in 9 slash commands.**
+
+[![npm](https://img.shields.io/npm/v/sdlc-kit?color=cb3837&logo=npm)](https://www.npmjs.com/package/sdlc-kit)
+[![CI](https://github.com/sumitroajiprabowo/sdlc-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/sumitroajiprabowo/sdlc-kit/actions/workflows/ci.yml)
+[![license](https://img.shields.io/npm/l/sdlc-kit)](LICENSE)
+[![node](https://img.shields.io/node/v/sdlc-kit)](package.json)
+![dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
+
+<img src="assets/demo.svg" alt="sdlc-kit demo: install, then spec, start, review, qa and ship" width="760">
+
+`npx sdlc-kit` · works with Claude Code, Codex, Antigravity, Cursor, OpenCode and local LLMs
+
+⭐ If this saves you tokens, a star helps others find it.
+
+</div>
 
 Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDLC (plan, code, QA, ship, incident response). Installs into Claude Code, Codex, Antigravity, Cursor, OpenCode, or any local LLM. TypeScript, no runtime dependencies.
 
@@ -9,6 +27,7 @@ Long sessions, bloated global instructions, full test logs, and whole chat histo
 - **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 8 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
 - **9 slash commands**: `/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`.
 - **Covers repo setup to production**: milestone slicing, 5-state frontend checklist, QA pyramid, bugfix vs production hotfix, CI/CD, and Expand & Contract database migrations.
+- **Size routing, spec gates, and resumable state**: `/sdlc-start` classifies tasks as S/M/L, `/sdlc-spec` pauses at an explicit approval gate before issue breakdown, and `.claude/HANDOFF.md` (`Task | Stage | Size`) plus gitignored `.claude/tasks/<slug>/` artifacts resume cleanly across `/clear`.
 - **Orchestrator protocol**: fresh-context worker briefings and worker reports under 30 lines.
 
 ---
@@ -29,7 +48,7 @@ The package is published on npm as [`sdlc-kit`](https://www.npmjs.com/package/sd
 npx sdlc-kit --claude
 
 # Claude Code + token-saving preset: adds opusplan (only if you have no model set),
-# 200k context cap, tool search, auto-compact, and a statusline. Existing values are kept.
+# 200k context cap, tool search, auto-compact, and a statusline (ctx %, cost, tokens). Existing values are kept.
 npx sdlc-kit --claude --optimize
 
 # Codex only
@@ -82,7 +101,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | `--local` | Install a compact prompt (`<800` tokens) to `~/.sdlc-kit/LOCAL_PROMPT.md` |
 | `--project` | Scaffold non-destructive project templates (`docs/`, PR template, `AGENTS.md`, `CLAUDE.md -> @AGENTS.md`, `.gitignore`) |
 | `--all` | Install across `claude`, `codex`, `antigravity`, `cursor`, `opencode`, and `local` |
-| `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (the original `.bak` is never overwritten), then adds only the keys you haven't set: `opusplan` model, 200k context cap, tool search, auto-compact at 70%, bounded outputs, and a context statusline. Run `--claude --uninstall` to revert just those keys |
+| `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (the original `.bak` is never overwritten), then adds only the keys you haven't set: `opusplan` model, 200k context cap, tool search, auto-compact at 70%, bounded outputs, and a statusline showing context %, session cost, and token counts. Run `--claude --uninstall` to revert just those keys |
 | `--doctor` | Run a read-only health & token-efficiency audit |
 | `--no-orchestrator` | Skip installing `sdlc-orchestrator` (single-agent workflow only) |
 | `--dry-run` | Preview actions without writing any files |
@@ -95,16 +114,17 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 ```text
 [0] Repo Setup   -> Thin AGENTS.md/CLAUDE.md (<4 KB) + docs/INDEX.md + path-scoped rules
-[1] Plan         -> /sdlc-spec (big features) -> /sdlc-start #123 (1 Issue = 1 PR)
+[1] Plan         -> /sdlc-spec (big features, approval gate) -> /sdlc-start #123 (size S/M/L; 1 Issue = 1 PR)
 [2] Code         -> Planner designs -> Executor codes + targeted tests
 [3] Handoff      -> ctx >=70%: /sdlc-handoff -> /clear -> /sdlc-pickup   (team: /sdlc-handoff-pr)
-[4] Ship & QA    -> /sdlc-qa -> /sdlc-review -> /sdlc-ship -> CI gate -> SemVer release -> Prod
+                    HANDOFF.md keeps `Task | Stage | Size`; artifacts live in .claude/tasks/<slug>/
+[4] Ship & QA    -> (S: tests only) /sdlc-qa -> /sdlc-review -> /sdlc-ship -> CI gate -> SemVer release -> Prod
 [5] Incident     -> Bug: fix/#id + regression test | Prod outage: hotfix/ from tag, minimal diff, back-merge
 ```
 
 ### Usage by Agent
 
-- **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
+- **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. Task state is saved in `.claude/HANDOFF.md` and `.claude/tasks/<slug>/`. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
 - **Codex**: Invoke `$sdlc-workflow` or `$sdlc-orchestrator` in your prompt.
 - **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
 - **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
@@ -146,6 +166,7 @@ Every installed file is recorded with a hash in `~/.sdlc-kit/manifest.json`. The
 
 - **"Skipped ... not installed by sdlc-kit"**: a file with that name already exists (e.g. your own `review.md`). Keep it, rename ours, or pass `--force` to overwrite.
 - **Slash command name clashes**: every command carries the `sdlc-` prefix so it cannot collide with built-ins such as `/ship` or `/review` (a test enforces this). Installed commands never overwrite existing files. Old unprefixed commands (`/ship`, `/review`, ...) installed by 0.1.x are removed automatically on upgrade if you never edited them; edited ones are kept with a warning. Plugin installs are namespaced (`/sdlc-kit:sdlc-review`).
+- **Task files show up in git**: `.claude/tasks/` and `.claude/HANDOFF.md` are local state. `--project` adds both to `.gitignore` and `--doctor` warns if either is missing.
 - **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx sdlc-kit --claude --uninstall`.
 - **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
 - **Windows, macOS, Linux**: all three are tested in CI on Node 20 and 22. The installer and the `--optimize` statusline need only Node.js (no `bash` or `jq`). Paths use your home directory (`%USERPROFILE%` on Windows). The Cursor and OpenCode directories are unverified on Windows.

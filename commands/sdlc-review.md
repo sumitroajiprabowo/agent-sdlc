@@ -13,4 +13,5 @@ Review ONLY the current branch changes (do not scan unrelated files):
    - **Frontend (if UI touched)**: missing Loading, Empty, Error, or Responsive/A11y states
    - **Tests**: missing unit/regression coverage for changed behavior
 3. Report findings grouped by severity (**P0 Blocker**, **P1 Should Fix**, **P2 Minor**) with `file:line` references and concrete fixes, ending with `VERDICT: APPROVE` or `VERDICT: REQUEST CHANGES`.
-4. Do NOT edit files during review unless the user asks you to fix findings.
+4. If a task slug exists (`.claude/tasks/<slug>/`), also write the report to `review.md` there.
+5. Do NOT edit files during review unless the user asks you to fix findings.

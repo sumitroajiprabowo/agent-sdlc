@@ -12,4 +12,4 @@ Verify quality on current branch changes without dumping noisy logs or screensho
    - **E2E (critical paths only)**: run via CLI test runner (e.g. `npx playwright test <spec> --reporter=line`) — do NOT take interactive browser screenshots unless explicitly requested
    - **Load / Stress (Staging only)**: for high-traffic or DB-heavy changes, recommend or run `k6` Smoke/Load thresholds in Staging (never against Production)
 3. If frontend UI changed, verify code covers all **5 UI States**: Default, Loading, Empty, Error, Responsive/A11y.
-4. Output a compact QA matrix (`PASS` / `FAIL` / `SKIPPED` per layer). If a bug is found, report exact failing lines and offer to add a failing regression test before fixing.
+4. Output a compact QA matrix (`PASS` / `FAIL` / `SKIPPED` per layer); if `.claude/tasks/<slug>/` exists, also write it to `qa.md` there. If a bug is found, report exact failing lines and offer to add a failing regression test before fixing.

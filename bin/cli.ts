@@ -21,7 +21,7 @@ Targets (auto-detected if omitted):
   --all               Install to claude, codex, antigravity, cursor, opencode, and local
 
 Options:
-  --optimize          (With --claude) Add opusplan, 200k cap, tool search & statusline to ~/.claude/settings.json (keeps your existing values)
+  --optimize          (With --claude) Add opusplan, 200k cap, tool search & statusline (ctx %, cost, tokens) to ~/.claude/settings.json (keeps your existing values)
   --doctor            Run a read-only health & token-efficiency audit
   --no-orchestrator   Skip installing the multi-agent sdlc-orchestrator skill
   --dry-run           Preview planned changes without writing files

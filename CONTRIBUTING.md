@@ -18,5 +18,6 @@ Keep this project small, with no runtime dependencies.
 ## Adding or changing things
 - **New slash command**: add `commands/<name>.md` (with a `description:` frontmatter line, <=30 lines) **and** list it in `COMMAND_FILES` in `lib/installer.ts`; update the command counts in `README.md` and `bin/cli.ts`.
 - **New skill reference**: add it under `skills/<skill>/references/` and link it from that skill's `SKILL.md` and the README.
-- **Installer changes**: files go through `installManagedFile` / `uninstallManagedFile` so the manifest stays accurate; add a test that uses `fs.mkdtempSync`.
+- **Installer changes**: files go through `installManagedFile` / `uninstallManagedFile` so the manifest stays accurate; add a test that uses `fs.mkdtempSync`. A new project gitignore entry goes in `PROJECT_GITIGNORE_ENTRIES` and in the `--doctor` check. `lib/statusline.ts` must stay self-contained (it is copied to `~/.claude/` as-is).
 - **Releases**: bump `version` in `package.json` and `.claude-plugin/plugin.json`, add a matching `## [x.y.z]` section to `CHANGELOG.md` (a test checks all three), then push a `vx.y.z` tag. The release workflow publishes to npm through trusted publishing (OIDC, no token) and skips a version that already exists on npm.
+- **README demo**: `assets/demo.svg` is hand-edited (animated CSS, no tooling); keep it <15 KB and in sync with the command names.
