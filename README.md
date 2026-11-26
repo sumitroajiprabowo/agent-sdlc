@@ -7,7 +7,7 @@ Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDL
 Long sessions, bloated global instructions, full test logs, and whole chat histories passed between subagents all burn tokens. This package keeps the always-loaded part small and moves the detail into files that load only when needed:
 
 - **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 8 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
-- **9 slash commands**: `/spec`, `/start`, `/handoff`, `/pickup`, `/handoff-pr`, `/adr`, `/qa`, `/review`, `/ship`.
+- **9 slash commands**: `/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`.
 - **Covers repo setup to production**: milestone slicing, 5-state frontend checklist, QA pyramid, bugfix vs production hotfix, CI/CD, and Expand & Contract database migrations.
 - **Orchestrator protocol**: fresh-context worker briefings and worker reports under 30 lines.
 
@@ -95,16 +95,16 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 ```text
 [0] Repo Setup   -> Thin AGENTS.md/CLAUDE.md (<4 KB) + docs/INDEX.md + path-scoped rules
-[1] Plan         -> /spec (big features) -> /start #123 (1 Issue = 1 PR)
+[1] Plan         -> /sdlc-spec (big features) -> /sdlc-start #123 (1 Issue = 1 PR)
 [2] Code         -> Planner designs -> Executor codes + targeted tests
-[3] Handoff      -> ctx >=70%: /handoff -> /clear -> /pickup   (team: /handoff-pr)
-[4] Ship & QA    -> /qa -> /review -> /ship -> CI gate -> SemVer release -> Prod
+[3] Handoff      -> ctx >=70%: /sdlc-handoff -> /clear -> /sdlc-pickup   (team: /sdlc-handoff-pr)
+[4] Ship & QA    -> /sdlc-qa -> /sdlc-review -> /sdlc-ship -> CI gate -> SemVer release -> Prod
 [5] Incident     -> Bug: fix/#id + regression test | Prod outage: hotfix/ from tag, minimal diff, back-merge
 ```
 
 ### Usage by Agent
 
-- **Claude Code**: Use `/spec` (for big features), `/start #123`, `/handoff`, `/pickup`, `/handoff-pr`, `/adr`, `/qa`, `/review`, `/ship` directly. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
+- **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
 - **Codex**: Invoke `$sdlc-workflow` or `$sdlc-orchestrator` in your prompt.
 - **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
 - **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
@@ -145,7 +145,7 @@ Every installed file is recorded with a hash in `~/.sdlc-kit/manifest.json`. The
 ## Troubleshooting
 
 - **"Skipped ... not installed by sdlc-kit"**: a file with that name already exists (e.g. your own `review.md`). Keep it, rename ours, or pass `--force` to overwrite.
-- **Slash command name clashes** (`/review`, `/ship`, `/qa` vs. built-ins or other plugins): installed commands never overwrite existing files. If a clash remains, rename the installed `.md` file; plugin installs are namespaced (`/sdlc-kit:review`).
+- **Slash command name clashes**: every command carries the `sdlc-` prefix so it cannot collide with built-ins such as `/ship` or `/review` (a test enforces this). Installed commands never overwrite existing files. Old unprefixed commands (`/ship`, `/review`, ...) installed by 0.1.x are removed automatically on upgrade if you never edited them; edited ones are kept with a warning. Plugin installs are namespaced (`/sdlc-kit:sdlc-review`).
 - **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx sdlc-kit --claude --uninstall`.
 - **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
 - **Windows, macOS, Linux**: all three are tested in CI on Node 20 and 22. The installer and the `--optimize` statusline need only Node.js (no `bash` or `jq`). Paths use your home directory (`%USERPROFILE%` on Windows). The Cursor and OpenCode directories are unverified on Windows.

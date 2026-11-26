@@ -8,6 +8,7 @@ import { test } from 'node:test';
 import {
   COMMAND_FILES,
   DEFAULT_PACKAGE_ROOT,
+  RESERVED_COMMAND_NAMES,
   detectTargets,
   parseArgs,
   runDoctor,
@@ -149,7 +150,7 @@ test('--dry-run writes nothing and --uninstall removes only sdlc-kit files', () 
 
   runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
   assert.equal(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow')), false);
-  assert.equal(fs.existsSync(path.join(home, '.claude/commands/start.md')), false);
+  assert.equal(fs.existsSync(path.join(home, '.claude/commands/sdlc-start.md')), false);
   assert.ok(fs.existsSync(customSkill));
 });
 
@@ -342,16 +343,51 @@ test('CLI subprocess --doctor smoke test', () => {
 
 test('install never clobbers a user-owned command; --force overrides', () => {
   const home = makeTempDir('sdlc-kit-noclobber-');
-  const review = path.join(home, '.claude/commands/review.md');
+  const review = path.join(home, '.claude/commands/sdlc-review.md');
   fs.mkdirSync(path.dirname(review), { recursive: true });
   fs.writeFileSync(review, 'my own review command\n');
 
   const res = runInstall({ targets: ['claude'], homeDir: home });
   assert.equal(fs.readFileSync(review, 'utf8'), 'my own review command\n');
-  assert.ok(res.warnings.some((w) => w.includes('review.md') && w.includes('--force')));
+  assert.ok(res.warnings.some((w) => w.includes('sdlc-review.md') && w.includes('--force')));
 
   runInstall({ targets: ['claude'], homeDir: home, force: true });
   assert.notEqual(fs.readFileSync(review, 'utf8'), 'my own review command\n');
+});
+
+test('command names are sdlc- prefixed and never equal a reserved built-in', () => {
+  for (const file of COMMAND_FILES) {
+    assert.ok(file.startsWith('sdlc-'), `${file} must start with sdlc-`);
+    const name = file.replace(/\.md$/, '');
+    assert.equal(RESERVED_COMMAND_NAMES.includes(name), false, `${name} clashes with a built-in`);
+  }
+});
+
+test('upgrade removes unmodified pre-0.2.0 command names but keeps edited or user-owned ones', () => {
+  const home = makeTempDir('sdlc-kit-migrate-');
+  const cmdDir = path.join(home, '.claude/commands');
+  runInstall({ targets: ['claude'], homeDir: home });
+
+  // Simulate a 0.1.x install: old names registered in the manifest.
+  const manifestPath = path.join(home, '.sdlc-kit/manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  const oldFiles: Array<[string, string]> = [['ship.md', 'old ship\n'], ['qa.md', 'old qa\n']];
+  for (const [oldName, content] of oldFiles) {
+    const dst = path.join(cmdDir, oldName);
+    fs.writeFileSync(dst, content);
+    manifest.files[dst] = crypto.createHash('sha256').update(content).digest('hex');
+  }
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+  fs.appendFileSync(path.join(cmdDir, 'qa.md'), 'my edit\n');
+  fs.writeFileSync(path.join(cmdDir, 'review.md'), 'user-owned review\n'); // not in manifest
+
+  const res = runInstall({ targets: ['claude'], homeDir: home, force: true });
+
+  assert.equal(fs.existsSync(path.join(cmdDir, 'ship.md')), false);
+  assert.ok(fs.existsSync(path.join(cmdDir, 'sdlc-ship.md')));
+  assert.ok(fs.existsSync(path.join(cmdDir, 'qa.md')), 'edited old file is kept');
+  assert.ok(res.warnings.some((w) => w.includes('qa.md') && w.includes('modified')));
+  assert.equal(fs.readFileSync(path.join(cmdDir, 'review.md'), 'utf8'), 'user-owned review\n');
 });
 
 test('uninstall keeps files modified after install and removes the manifest when done', () => {
@@ -359,13 +395,13 @@ test('uninstall keeps files modified after install and removes the manifest when
   runInstall({ targets: ['claude', 'local'], homeDir: home });
   assert.ok(fs.existsSync(path.join(home, '.sdlc-kit/manifest.json')));
 
-  const edited = path.join(home, '.claude/commands/ship.md');
+  const edited = path.join(home, '.claude/commands/sdlc-ship.md');
   fs.appendFileSync(edited, '\n# my tweak\n');
   const res = runInstall({ targets: ['claude', 'local'], uninstall: true, homeDir: home });
 
   assert.ok(fs.existsSync(edited));
-  assert.ok(res.warnings.some((w) => w.includes('ship.md') && w.includes('modified')));
-  assert.equal(fs.existsSync(path.join(home, '.claude/commands/start.md')), false);
+  assert.ok(res.warnings.some((w) => w.includes('sdlc-ship.md') && w.includes('modified')));
+  assert.equal(fs.existsSync(path.join(home, '.claude/commands/sdlc-start.md')), false);
   assert.equal(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow')), false);
   assert.equal(fs.existsSync(path.join(home, '.sdlc-kit/LOCAL_PROMPT.md')), false);
 });
@@ -374,11 +410,11 @@ test('uninstall removes legacy (pre-manifest) installs only when content matches
   const home = makeTempDir('sdlc-kit-legacy-');
   runInstall({ targets: ['claude'], homeDir: home });
   fs.rmSync(path.join(home, '.sdlc-kit'), { recursive: true });
-  fs.writeFileSync(path.join(home, '.claude/commands/qa.md'), 'user rewrote this\n');
+  fs.writeFileSync(path.join(home, '.claude/commands/sdlc-qa.md'), 'user rewrote this\n');
 
   runInstall({ targets: ['claude'], uninstall: true, homeDir: home });
-  assert.equal(fs.existsSync(path.join(home, '.claude/commands/adr.md')), false);
-  assert.ok(fs.existsSync(path.join(home, '.claude/commands/qa.md')));
+  assert.equal(fs.existsSync(path.join(home, '.claude/commands/sdlc-adr.md')), false);
+  assert.ok(fs.existsSync(path.join(home, '.claude/commands/sdlc-qa.md')));
 });
 
 test('--optimize keeps user model/env and --uninstall reverts only what it added', () => {
@@ -433,7 +469,7 @@ test('--dry-run with existing manifest does not modify it', () => {
   const before = fs.readFileSync(manifestPath, 'utf8');
   runInstall({ targets: ['claude'], uninstall: true, dryRun: true, homeDir: home });
   assert.equal(fs.readFileSync(manifestPath, 'utf8'), before);
-  assert.ok(fs.existsSync(path.join(home, '.claude/commands/start.md')));
+  assert.ok(fs.existsSync(path.join(home, '.claude/commands/sdlc-start.md')));
 });
 
 test('--cursor and --opencode also install and uninstall the 9 slash commands', () => {
