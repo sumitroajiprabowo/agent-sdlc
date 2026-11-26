@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-26
+
 ### Changed
 - **Breaking:** all 9 slash commands are now prefixed with `sdlc-` (`/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`) so they no longer clash with built-ins such as `/ship` and `/review`.
 - Upgrading removes the old unprefixed command files that sdlc-kit installed and you did not edit; edited or user-owned files are kept (with a warning for edited ones), even with `--force`.
