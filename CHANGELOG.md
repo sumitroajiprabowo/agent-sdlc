@@ -7,12 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-26
+
 ### Added
 - Size routing (`S` / `M` / `L`) in `/sdlc-start`.
 - Explicit approval gate in `/sdlc-spec` before proposing issues or writing code.
 - Per-task gitignored artifacts in `.claude/tasks/<slug>/` and `Task | Stage | Size` resume state in `.claude/HANDOFF.md`.
 - Session cost (`$0.42`) and input/output token counts in the `--optimize` statusline.
-
 - `sdlc-reviewer` and `sdlc-tester` Claude Code subagents (`~/.claude/agents/`); size M/L tasks delegate review and QA to them.
 - `--codex` now installs the 9 commands as Codex prompts in `~/.codex/prompts/`.
 - `/sdlc-review` `REQUEST CHANGES` and `/sdlc-qa` `FAIL` set `Stage: IMPLEMENT` in `.claude/HANDOFF.md` so work resumes at the fix.
