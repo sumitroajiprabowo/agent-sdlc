@@ -14,4 +14,5 @@ Review ONLY the current branch changes (do not scan unrelated files):
    - **Tests**: missing unit/regression coverage for changed behavior
 3. Report findings grouped by severity (**P0 Blocker**, **P1 Should Fix**, **P2 Minor**) with `file:line` references and concrete fixes, ending with `VERDICT: APPROVE` or `VERDICT: REQUEST CHANGES`.
 4. If a task slug exists (`.claude/tasks/<slug>/`), also write the report to `review.md` there.
-5. Do NOT edit files during review unless the user asks you to fix findings.
+5. On `REQUEST CHANGES`, set `Stage: IMPLEMENT` in `.claude/HANDOFF.md` (if present), list the P0/P1 items as next steps, and re-run review after the fix.
+6. Do NOT edit files during review unless the user asks you to fix findings.

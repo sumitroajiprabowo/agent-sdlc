@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Per-task gitignored artifacts in `.claude/tasks/<slug>/` and `Task | Stage | Size` resume state in `.claude/HANDOFF.md`.
 - Session cost (`$0.42`) and input/output token counts in the `--optimize` statusline.
 
+- `sdlc-reviewer` and `sdlc-tester` Claude Code subagents (`~/.claude/agents/`); size M/L tasks delegate review and QA to them.
+- `--codex` now installs the 9 commands as Codex prompts in `~/.codex/prompts/`.
+- `/sdlc-review` `REQUEST CHANGES` and `/sdlc-qa` `FAIL` set `Stage: IMPLEMENT` in `.claude/HANDOFF.md` so work resumes at the fix.
+- `--doctor` reports installed subagents.
+- Feature request issue template.
+
 ### Documentation
 - README hero with an animated terminal demo (`assets/demo.svg`) and badges.
 - README, skills, project and local templates, and CONTRIBUTING describe the size routing, approval gate, and task state flow.

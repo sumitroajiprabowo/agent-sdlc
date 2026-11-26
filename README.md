@@ -25,6 +25,7 @@ Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDL
 Long sessions, bloated global instructions, full test logs, and whole chat histories passed between subagents all burn tokens. This package keeps the always-loaded part small and moves the detail into files that load only when needed:
 
 - **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 8 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
+- **2 subagents** (Claude Code): `sdlc-reviewer` and `sdlc-tester`, independent read-only review and QA used by size M/L tasks.
 - **9 slash commands**: `/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`.
 - **Covers repo setup to production**: milestone slicing, 5-state frontend checklist, QA pyramid, bugfix vs production hotfix, CI/CD, and Expand & Contract database migrations.
 - **Size routing, spec gates, and resumable state**: `/sdlc-start` classifies tasks as S/M/L, `/sdlc-spec` pauses at an explicit approval gate before issue breakdown, and `.claude/HANDOFF.md` (`Task | Stage | Size`) plus gitignored `.claude/tasks/<slug>/` artifacts resume cleanly across `/clear`.
@@ -44,7 +45,7 @@ The package is published on npm as [`sdlc-kit`](https://www.npmjs.com/package/sd
 ### Install for Specific Agents
 
 ```bash
-# Claude Code only (skills + 9 slash commands)
+# Claude Code only (skills + 9 slash commands + 2 subagents)
 npx sdlc-kit --claude
 
 # Claude Code + token-saving preset: adds opusplan (only if you have no model set),
@@ -93,8 +94,8 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 | Flag | Description |
 |---|---|
-| `--claude` | Install skills & 9 slash commands into `~/.claude/` |
-| `--codex` | Install skills into `~/.codex/skills/` and `~/.agents/skills/` |
+| `--claude` | Install skills, 9 slash commands & 2 subagents into `~/.claude/` |
+| `--codex` | Install skills into `~/.codex/skills/` and `~/.agents/skills/`, and 9 prompts into `~/.codex/prompts/` |
 | `--antigravity` | Install skills into `~/.agents/skills/` |
 | `--cursor` | Install skills into `~/.cursor/skills/` and commands into `~/.cursor/commands/` |
 | `--opencode` | Install skills into `~/.config/opencode/skills/` and `~/.agents/skills/`, commands into `~/.config/opencode/command/` |
@@ -125,7 +126,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 ### Usage by Agent
 
 - **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. Task state is saved in `.claude/HANDOFF.md` and `.claude/tasks/<slug>/`. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
-- **Codex**: Invoke `$sdlc-workflow` or `$sdlc-orchestrator` in your prompt.
+- **Codex**: Invoke `$sdlc-workflow` or `$sdlc-orchestrator` in your prompt. The 9 commands are custom prompts: run them as `/prompts:sdlc-start`, `/prompts:sdlc-spec`, and so on.
 - **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
 - **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
 - **OpenCode**: Skills in `~/.config/opencode/skills/` and `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/command/`.
@@ -153,8 +154,8 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 | Target | Skills | Slash commands |
 |---|---|---|
-| `--claude` | `~/.claude/skills/` | `~/.claude/commands/` |
-| `--codex` | `~/.codex/skills/`, `~/.agents/skills/` | none |
+| `--claude` | `~/.claude/skills/` | `~/.claude/commands/` (+ subagents in `~/.claude/agents/`) |
+| `--codex` | `~/.codex/skills/`, `~/.agents/skills/` | `~/.codex/prompts/` |
 | `--antigravity` | `~/.agents/skills/` | none |
 | `--cursor` | `~/.cursor/skills/` | `~/.cursor/commands/` |
 | `--opencode` | `~/.config/opencode/skills/`, `~/.agents/skills/` | `~/.config/opencode/command/` |

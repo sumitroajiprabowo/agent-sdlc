@@ -9,7 +9,7 @@ Start the task cleanly (`$ARGUMENTS`) without scanning the whole repository:
    - If `$ARGUMENTS` mentions a milestone, list open issues (`gh issue list --milestone "<name>" --state open`).
 2. Read ONLY targeted context: check `docs/INDEX.md` or relevant `docs/adr/` if present.
 3. **Scope check**: If the task clearly spans multiple PRs/days, propose splitting into smaller issues (`1 Issue = 1 PR = 1 Session`) before coding.
-3b. **Size**: classify and state it in the plan header. **S** (≤3 files, no API/schema/security change): implement with a targeted test, then `/sdlc-ship`. **M**: implement, then fresh-context `/sdlc-review` and `/sdlc-qa`, then `/sdlc-ship`. **L** (multiple PRs or new architecture): stop and run `/sdlc-spec` first.
+3b. **Size**: classify and state it in the plan header. **S** (≤3 files, no API/schema/security change): implement with a targeted test, then `/sdlc-ship`. **M**: implement, then delegate review and QA to the `sdlc-reviewer` and `sdlc-tester` subagents (or run `/sdlc-review` and `/sdlc-qa` in a fresh context), then `/sdlc-ship`. **L** (multiple PRs or new architecture): stop and run `/sdlc-spec` first.
 4. **Branch**: Propose a branch name (e.g. `feat/<slug>` or `fix/<slug>`) synced from the latest base branch (ask before switching if the working tree is dirty).
 5. Output a concise plan (<35 lines):
    - **Goal**
