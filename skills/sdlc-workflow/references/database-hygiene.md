@@ -1,6 +1,6 @@
 # Database Performance & Lock-Safe Migrations (On-Demand)
 
-Consult this guide when writing queries, changing schemas, or reviewing DB changes (`/spec`, `/review`).
+Consult this guide when writing queries, changing schemas, or reviewing DB changes (`/sdlc-spec`, `/sdlc-review`).
 
 ## 1. Query Performance
 - Run **`EXPLAIN ANALYZE`** on new or non-trivial queries before shipping to catch full-table scans early.

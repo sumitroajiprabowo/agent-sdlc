@@ -92,15 +92,24 @@ interface Context {
 
 export const SKILL_NAMES = ['sdlc-workflow', 'sdlc-orchestrator'];
 export const COMMAND_FILES = [
-  'spec.md',
-  'start.md',
-  'handoff.md',
-  'pickup.md',
-  'handoff-pr.md',
-  'adr.md',
-  'qa.md',
-  'review.md',
-  'ship.md',
+  'sdlc-spec.md',
+  'sdlc-start.md',
+  'sdlc-handoff.md',
+  'sdlc-pickup.md',
+  'sdlc-handoff-pr.md',
+  'sdlc-adr.md',
+  'sdlc-qa.md',
+  'sdlc-review.md',
+  'sdlc-ship.md',
+];
+
+// Pre-0.2.0 unprefixed names; removed on install/uninstall when still unmodified.
+const LEGACY_COMMAND_FILES = COMMAND_FILES.map((f) => f.replace(/^sdlc-/, ''));
+
+// Claude Code built-in slash commands/skills our command names must never equal.
+export const RESERVED_COMMAND_NAMES = [
+  'clear', 'code-review', 'compact', 'config', 'help', 'init', 'loop', 'review',
+  'run', 'schedule', 'security-review', 'ship', 'simplify', 'steward',
 ];
 
 // Agents with a custom slash-command directory that accepts our markdown commands.
@@ -314,6 +323,21 @@ function uninstallManagedFile(ctx: Context, src: string | null, dst: string): vo
     delete ctx.manifest.files[dst];
   } else {
     ctx.warnings.push(`Kept ${dst}: modified since install (use --force to remove)`);
+  }
+}
+
+// Remove a file we installed under an old name. Never touches files absent from the
+// manifest (user-owned), and ignores --force so a same-named user command is safe.
+function removeLegacyManagedFile(ctx: Context, dst: string): void {
+  const recorded = ctx.manifest.files[dst];
+  if (recorded === undefined) return;
+  if (!fs.existsSync(dst)) {
+    delete ctx.manifest.files[dst];
+  } else if (sha256(dst) === recorded) {
+    removePathAction(dst, ctx.dryRun, ctx.actions);
+    delete ctx.manifest.files[dst];
+  } else {
+    ctx.warnings.push(`Kept ${dst}: modified since install (old command name; remove manually)`);
   }
 }
 
@@ -584,6 +608,9 @@ export function runInstall(options: RunOptions = {}): RunResult {
 
   const syncCommands = (target: CommandTarget): void => {
     const cmdDir = path.join(homeDir, ...COMMAND_DIRS[target]);
+    for (const old of LEGACY_COMMAND_FILES) {
+      removeLegacyManagedFile(ctx, path.join(cmdDir, old));
+    }
     for (const cmd of COMMAND_FILES) {
       const src = path.join(packageRoot, 'commands', cmd);
       const dst = path.join(cmdDir, cmd);

@@ -9,13 +9,13 @@ license: MIT
 ## Command Loop
 
 ```text
-/spec (big features) → /start #id
+/sdlc-spec (big features) → /sdlc-start #id
   → (complex task: use strong Planner model → approve)
   → Fast Executor model + targeted tests
-  → ctx ≥70%: /handoff → /clear → /pickup   (personal)
-  → team handoff: push WIP → /handoff-pr     (Draft PR / Issue comment)
-  → key arch decision: /adr <title>
-  → /qa → /review → /ship → review + CI → merge → /clear
+  → ctx ≥70%: /sdlc-handoff → /clear → /sdlc-pickup   (personal)
+  → team handoff: push WIP → /sdlc-handoff-pr     (Draft PR / Issue comment)
+  → key arch decision: /sdlc-adr <title>
+  → /sdlc-qa → /sdlc-review → /sdlc-ship → review + CI → merge → /clear
 ```
 
 ## Phase 0 — Repo Foundation
@@ -28,10 +28,10 @@ license: MIT
 
 ## Phase 1 — Planning & Milestone Rule
 
-- **No Milestone**: small feature (1–2 PRs, ≤1 day), routine bug, or hotfix → 1 Issue → `/start #id` → `/ship`.
+- **No Milestone**: small feature (1–2 PRs, ≤1 day), routine bug, or hotfix → 1 Issue → `/sdlc-start #id` → `/sdlc-ship`.
 - **Use a Milestone**: big feature (≥3 Issues, cross-service DB+BE+FE, or >2–3 days) or team sprint.
 - **Big feature slicing** (1 dedicated planning session):
-  1. Write short spec in `docs/plans/<feature>.md` + `/adr` for key decisions.
+  1. Write short spec in `docs/plans/<feature>.md` + `/sdlc-adr` for key decisions.
   2. Split into ordered small issues (`1 Issue = 1 PR = 1–2 Sessions`):
      - Issue 1 (Data): backward-compatible DB migration + model/repo + unit tests.
      - Issue 2 (Backend): API endpoints + logic + integration tests + API spec.
@@ -44,15 +44,15 @@ license: MIT
 - Keep design tokens in code (CSS vars / Tailwind / UI kit) + path-scoped design rules.
 - Every FE issue must cover **5 UI States**: Default, Loading, Empty, Error, Responsive/A11y.
 - Lock API / TypeScript schema first so BE & FE work in parallel.
-- **Token rule**: after any visual/screenshot inspection, `/handoff` → `/clear` so images do not linger in context.
+- **Token rule**: after any visual/screenshot inspection, `/sdlc-handoff` → `/clear` so images do not linger in context.
 
 ## Phase 3 — Daily Execution & Token Discipline
 
 - Launch the agent inside the target service directory (not monorepo root unless cross-service).
 - For files >200 lines, locate symbols with Grep first or read targeted line ranges (`offset`/`limit`).
 - Run targeted tests only (`go test ./pkg -run TestX`, `vitest run file`, `pytest -k test_x`) and bound Bash logs (`| tail -n 50`).
-- **Personal handoff**: `/handoff` → `/clear` → `/pickup` (`.claude/HANDOFF.md`, <60 lines).
-- **Team handoff**: push WIP branch → `/handoff-pr` (<40-line summary to PR/Issue).
+- **Personal handoff**: `/sdlc-handoff` → `/clear` → `/sdlc-pickup` (`.claude/HANDOFF.md`, <60 lines).
+- **Team handoff**: push WIP branch → `/sdlc-handoff-pr` (<40-line summary to PR/Issue).
 
 ## Phase 4 — QA Pyramid (Token-Safe)
 
@@ -66,12 +66,12 @@ license: MIT
 
 ## Phase 5 — Bugs, Hotfixes & Refactors
 
-- **Normal Bug**: `fix/<id>-<slug>` from `main` → reproduce → write failing regression test → fix → `/ship`.
+- **Normal Bug**: `fix/<id>-<slug>` from `main` → reproduce → write failing regression test → fix → `/sdlc-ship`.
 - **Prod Hotfix**:
   1. Rollback first if faster to restore service.
   2. Branch `hotfix/<slug>` from the **production release tag** (never from a feature branch).
   3. Minimal diff only (**NO refactors**) + regression test.
-  4. Fast-track `/ship` → deploy → **back-merge / cherry-pick** into `main` → write 10–15 line post-mortem.
+  4. Fast-track `/sdlc-ship` → deploy → **back-merge / cherry-pick** into `main` → write 10–15 line post-mortem.
 - **Refactor**: separate PR from features; ensure existing tests are green first.
 
 ## Phase 6 — CI/CD, Release, Migrations & Prod Guardrails

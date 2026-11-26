@@ -1,6 +1,6 @@
 # Security & Multi-Tenant Checklist (On-Demand)
 
-Consult this checklist when touching authentication, authorization, payments, or external inputs (`/spec`, `/review`).
+Consult this checklist when touching authentication, authorization, payments, or external inputs (`/sdlc-spec`, `/sdlc-review`).
 
 ## 1. AuthN / AuthZ & Multi-Tenant Isolation
 - Enforce **server-side default-deny** RBAC/ABAC on every endpoint and mutation — never trust client-supplied role or tenant IDs.

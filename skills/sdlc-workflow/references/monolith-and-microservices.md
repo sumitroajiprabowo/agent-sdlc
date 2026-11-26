@@ -1,6 +1,6 @@
 # Modular Monolith & Microservices Guide (On-Demand)
 
-Consult this guide when designing system boundaries (`/spec`, `/adr`) or evolving multi-service architectures.
+Consult this guide when designing system boundaries (`/sdlc-spec`, `/sdlc-adr`) or evolving multi-service architectures.
 
 ## Part 1 — Modular Monolith (Recommended Default)
 Start here unless you have a proven reason to distribute. You get ACID transactions, zero network hops, and simple deploys while keeping code cleanly decoupled:

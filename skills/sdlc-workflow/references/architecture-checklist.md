@@ -1,6 +1,6 @@
 # Big Tech Architecture Checklist (On-Demand)
 
-Consult this checklist when designing critical services (`/spec`, `/adr`) or reviewing mutations (`/review`).
+Consult this checklist when designing critical services (`/sdlc-spec`, `/sdlc-adr`) or reviewing mutations (`/sdlc-review`).
 
 ## 1. Idempotency & Safe Retries
 - Require an **idempotency key** on all critical mutations (payments, billing, provisioning, webhooks, async jobs) so retries or double-clicks never duplicate state.

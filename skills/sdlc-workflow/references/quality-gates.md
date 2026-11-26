@@ -1,6 +1,6 @@
 # Universal Quality Gates, API QA & Stress Testing (On-Demand)
 
-Consult this reference during `/qa`, `/review`, and `/ship`.
+Consult this reference during `/sdlc-qa`, `/sdlc-review`, and `/sdlc-ship`.
 
 ## 1. Auto-Detect Execution Order
 1. **Repo Scripts First**: Run existing `Makefile`, `Taskfile.yml`, `package.json`, or `.pre-commit-config.yaml` targets so local checks match CI.

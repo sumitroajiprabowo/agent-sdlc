@@ -1,6 +1,6 @@
 # Clean Code & LLM Coding Discipline (On-Demand)
 
-Consult this reference when writing or reviewing code (`/review`).
+Consult this reference when writing or reviewing code (`/sdlc-review`).
 
 ## 1. Four Coding Discipline Principles (Anti-Over-Engineering)
 1. **Think Before Coding**: State assumptions explicitly; surface ambiguities and tradeoffs instead of guessing silently; push back when a simpler approach exists.

@@ -8,7 +8,7 @@ Run the pre-PR shipping checklist:
 2. Run auto-detected **Quality Gates** (`references/quality-gates.md` in the `sdlc-workflow` skill: Formatter, Lint & Typecheck, Vulnerability Audit, Secret Scan) and targeted tests ONLY for affected packages with bounded output (e.g. `| tail -n 50`). Report `SKIPPED (not installed)` honestly if a tool is missing; stop and report if any check fails.
 3. **Docs-as-Code check (3 conditions)**:
    - API contract / DB schema / env var changed → verify the relevant doc is updated.
-   - New architectural decision → remind the user to run `/adr`.
+   - New architectural decision → remind the user to run `/sdlc-adr`.
    - Routine internal bugfix or refactor → skip docs.
 4. **Commit/PR hygiene**: clean commit messages without AI attribution trailers (unless project policy requires otherwise); offer sync/rebase/squash if needed.
 5. Draft a concise PR/MR title & body (**What changed**, **How verified**, **Related issue**), and ask for user confirmation before pushing and opening it (`gh pr create` or `glab mr create`).

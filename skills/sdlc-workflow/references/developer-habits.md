@@ -24,6 +24,6 @@ Engineering habits that keep velocity high, incidents rare, and codebases lean f
 
 ## 6. Definition of Done (DoD)
 - [ ] Static checks, unit/integration tests, and critical E2E checks pass
-- [ ] Peer reviewed (`/review`) with no unresolved P0/P1 findings
+- [ ] Peer reviewed (`/sdlc-review`) with no unresolved P0/P1 findings
 - [ ] Verified in Staging/Preview with logs & metrics clean
 - [ ] Docs / ADR updated if contracts, schemas, or architecture changed
