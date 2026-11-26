@@ -128,6 +128,7 @@ test('--project scaffolds missing files, preserves existing AGENTS.md, and updat
 
   const gi = fs.readFileSync(path.join(cwd, '.gitignore'), 'utf8');
   assert.ok(gi.includes('.claude/HANDOFF.md'));
+  assert.ok(gi.includes('.claude/tasks/'));
   assert.ok(gi.includes('CLAUDE.local.md'));
 
   // Second run must be idempotent
@@ -323,15 +324,39 @@ test('installed statusline runs with plain node (no bash or jq) and handles bad 
       workspace: { current_dir: path.join(os.homedir(), 'demo') },
     }),
   );
-  assert.ok(out.includes('ctx 74% (/handoff)'));
+  assert.ok(out.includes('ctx 74% (/sdlc-handoff)'));
   assert.ok(out.includes('Sonnet'));
   assert.ok(out.includes('~'));
-  assert.ok(run(JSON.stringify({ context_window: { used_percentage: 90 } })).includes('/handoff & /clear!'));
+  assert.equal(out.includes('$'), false);
+  assert.ok(run(JSON.stringify({ context_window: { used_percentage: 90 } })).includes('/sdlc-handoff & /clear!'));
+
+  const withMetrics = run(
+    JSON.stringify({
+      cost: { total_cost_usd: 0.42 },
+      context_window: { used_percentage: 75, total_input_tokens: 120000, total_output_tokens: 8000 },
+    }),
+  );
+  assert.ok(withMetrics.includes('$0.42'));
+  assert.ok(withMetrics.includes('in 120k'));
+  assert.ok(withMetrics.includes('out 8k'));
+  assert.ok(withMetrics.includes('/sdlc-handoff'));
+
   assert.doesNotThrow(() => run('not json'));
   assert.doesNotThrow(() => run(''));
 
   const settings = JSON.parse(fs.readFileSync(path.join(home, '.claude/settings.json'), 'utf8'));
   assert.equal(settings.statusLine.command, `node "${script}"`);
+});
+
+test('commands include size routing, spec approval gate, and stage resume state', () => {
+  const readCmd = (name: string): string =>
+    fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'commands', name), 'utf8');
+
+  assert.ok(readCmd('sdlc-spec.md').includes('Gate'));
+  const start = readCmd('sdlc-start.md');
+  assert.ok(start.includes('Size'));
+  assert.ok(start.includes('**S**') && start.includes('**M**') && start.includes('**L**'));
+  assert.ok(readCmd('sdlc-handoff.md').includes('Stage:'));
 });
 
 test('CLI subprocess --doctor smoke test', () => {

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="420" viewBox="0 0 760 420" role="img" aria-label="sdlc-kit demo: install, then spec, start, review, qa and ship with slash commands">
+<style>
+text{font:14px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.cur{fill:#c9d1d9;animation:blink 1s steps(1) infinite}@keyframes blink{50%{opacity:0}}
+.l0{opacity:0;animation:k0 15.0s infinite}@keyframes k0{0%,2.67%{opacity:0}3.47%,93%{opacity:1}99%,100%{opacity:0}}
+.l1{opacity:0;animation:k1 15.0s infinite}@keyframes k1{0%,12.00%{opacity:0}12.80%,93%{opacity:1}99%,100%{opacity:0}}
+.l2{opacity:0;animation:k2 15.0s infinite}@keyframes k2{0%,16.67%{opacity:0}17.47%,93%{opacity:1}99%,100%{opacity:0}}
+.l3{opacity:0;animation:k3 15.0s infinite}@keyframes k3{0%,25.33%{opacity:0}26.13%,93%{opacity:1}99%,100%{opacity:0}}
+.l4{opacity:0;animation:k4 15.0s infinite}@keyframes k4{0%,32.00%{opacity:0}32.80%,93%{opacity:1}99%,100%{opacity:0}}
+.l5{opacity:0;animation:k5 15.0s infinite}@keyframes k5{0%,38.67%{opacity:0}39.47%,93%{opacity:1}99%,100%{opacity:0}}
+.l6{opacity:0;animation:k6 15.0s infinite}@keyframes k6{0%,46.00%{opacity:0}46.80%,93%{opacity:1}99%,100%{opacity:0}}
+.l7{opacity:0;animation:k7 15.0s infinite}@keyframes k7{0%,54.67%{opacity:0}55.47%,93%{opacity:1}99%,100%{opacity:0}}
+.l8{opacity:0;animation:k8 15.0s infinite}@keyframes k8{0%,61.33%{opacity:0}62.13%,93%{opacity:1}99%,100%{opacity:0}}
+.l9{opacity:0;animation:k9 15.0s infinite}@keyframes k9{0%,68.00%{opacity:0}68.80%,93%{opacity:1}99%,100%{opacity:0}}
+.l10{opacity:0;animation:k10 15.0s infinite}@keyframes k10{0%,76.67%{opacity:0}77.47%,93%{opacity:1}99%,100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){[class^="l"]{animation:none;opacity:1}.cur{animation:none;opacity:0}}
+</style>
+<rect width="760" height="420" rx="12" fill="#0d1117" stroke="#30363d"/>
+<rect width="760" height="40" rx="12" fill="#161b22"/><rect y="28" width="760" height="12" fill="#161b22"/>
+<circle cx="24" cy="20" r="6" fill="#ff5f56"/><circle cx="44" cy="20" r="6" fill="#ffbd2e"/><circle cx="64" cy="20" r="6" fill="#27c93f"/>
+<text x="380" y="25" text-anchor="middle" fill="#8b949e" style="font-size:12px">sdlc-kit — plan → code → QA → ship</text>
+<text class="l0" x="28" y="96" xml:space="preserve"><tspan fill="#8b949e">$ </tspan><tspan fill="#c9d1d9">npx sdlc-kit --claude --optimize</tspan></text>
+<text class="l1" x="28" y="122" xml:space="preserve"><tspan fill="#3fb950">✔ </tspan><tspan fill="#c9d1d9">2 skills · 9 slash commands (/sdlc-*)</tspan></text>
+<text class="l2" x="28" y="148" xml:space="preserve"><tspan fill="#3fb950">✔ </tspan><tspan fill="#c9d1d9">opusplan · 200k cap · statusline (ctx %, cost, tokens)</tspan></text>
+<text class="l3" x="28" y="174" xml:space="preserve"><tspan fill="#58a6ff">&gt; </tspan><tspan fill="#bc8cff">/sdlc-spec </tspan><tspan fill="#c9d1d9">"billing export"</tspan></text>
+<text class="l4" x="28" y="200" xml:space="preserve"><tspan fill="#d29922">  ⏸ </tspan><tspan fill="#c9d1d9">Spec saved. Approve, revise, or cancel?</tspan></text>
+<text class="l5" x="28" y="226" xml:space="preserve"><tspan fill="#58a6ff">&gt; </tspan><tspan fill="#c9d1d9">approve  </tspan><tspan fill="#3fb950">✔ Status: approved</tspan></text>
+<text class="l6" x="28" y="252" xml:space="preserve"><tspan fill="#58a6ff">&gt; </tspan><tspan fill="#bc8cff">/sdlc-start </tspan><tspan fill="#c9d1d9">#12  </tspan><tspan fill="#8b949e">→ size M, plan saved to .claude/tasks/</tspan></text>
+<text class="l7" x="28" y="278" xml:space="preserve"><tspan fill="#58a6ff">&gt; </tspan><tspan fill="#bc8cff">/sdlc-review </tspan><tspan fill="#8b949e">→ </tspan><tspan fill="#3fb950">VERDICT: APPROVE</tspan></text>
+<text class="l8" x="28" y="304" xml:space="preserve"><tspan fill="#58a6ff">&gt; </tspan><tspan fill="#bc8cff">/sdlc-qa </tspan><tspan fill="#8b949e">→ </tspan><tspan fill="#3fb950">lint PASS · unit PASS · api PASS</tspan></text>
+<text class="l9" x="28" y="330" xml:space="preserve"><tspan fill="#58a6ff">&gt; </tspan><tspan fill="#bc8cff">/sdlc-ship </tspan><tspan fill="#8b949e">→ </tspan><tspan fill="#3fb950">PR opened ✔</tspan></text>
+<text class="l10" x="28" y="356" xml:space="preserve"><tspan fill="#8b949e">~/app  </tspan><tspan fill="#d29922">ctx 72% (/sdlc-handoff)</tspan><tspan fill="#8b949e">  $0.42  in 120k/out 8k  </tspan><tspan fill="#8b949e">Opus</tspan></text>
+<rect class="cur" x="28" y="368" width="8" height="16"/>
+</svg>

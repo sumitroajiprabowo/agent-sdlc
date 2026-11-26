@@ -141,6 +141,7 @@ function statuslineCommand(homeDir: string, file: string = STATUSLINE_FILE): str
 
 const PROJECT_GITIGNORE_ENTRIES = [
   '.claude/HANDOFF.md',
+  '.claude/tasks/',
   'CLAUDE.local.md',
   '.claude/settings.local.json',
 ];
@@ -798,10 +799,11 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
   if (fs.existsSync(path.join(cwd, '.git'))) {
     const giPath = path.join(cwd, '.gitignore');
     const gi = fs.existsSync(giPath) ? fs.readFileSync(giPath, 'utf8') : '';
-    if (!gi.includes('.claude/HANDOFF.md')) {
-      add('WARN', 'project-gitignore', '.gitignore is missing .claude/HANDOFF.md (run --project to add safely)');
+    const missing = ['.claude/HANDOFF.md', '.claude/tasks/'].filter((e) => !gi.includes(e));
+    if (missing.length > 0) {
+      add('WARN', 'project-gitignore', `.gitignore is missing ${missing.join(', ')} (run --project to add safely)`);
     } else {
-      add('OK', 'project-gitignore', '.gitignore excludes .claude/HANDOFF.md');
+      add('OK', 'project-gitignore', '.gitignore excludes .claude/HANDOFF.md and .claude/tasks/');
     }
   }
 
