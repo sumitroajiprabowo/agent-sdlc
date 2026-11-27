@@ -1,6 +1,6 @@
 {
   "name": "sdlc-kit",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Universal, token-efficient SDLC workflow skills, commands, and orchestrator protocol for Claude Code, Codex, Antigravity, and Local LLMs.",
   "type": "module",
   "license": "MIT",
