@@ -13,8 +13,9 @@ If no task was given, ask for an issue number/URL, one-line description, `setup`
    - List models via `agy models` and `opencode models`; for `claude` and `codex`, ask with suggestions.
    - For each role (`tech-lead`, `backend`, `frontend`, `qa`, `security`, `devops`, `reviewer`, plus any custom role), ask: enabled, CLI, model, and owned paths.
    - Warn and ask for another model if `reviewer` or `security` shares the same CLI+model as any write role (separation of duties).
+   - Before saving, probe each chosen CLI+model with a one-line read-only call (see `team-dispatch.md`).
    - Ask whether to save globally (`~/.sdlc-kit/team.json`) or per project (`.sdlc/team.json`), then write JSON.
-4. Show the active roster table (`Role | CLI | Model | Paths`) and wait for user confirmation.
+4. Show the active roster table (`Role | CLI | Model | Paths`), warn if `reviewer` or `security` shares a CLI+model with any write role, and wait for user confirmation.
 5. Pick the workflow (`.sdlc/workflows/<name>.json` first, else `references/workflows/<name>.json` in `sdlc-orchestrator`; default `feature`).
 6. If `$ARGUMENTS` is `resume <slug>`, read `.claude/tasks/<slug>/run.json` and continue from the first step not `done`; otherwise create `.claude/tasks/<slug>/` with `board.md`, `contracts/`, and `run.json`.
 7. Run steps in `needs` order per `references/team-protocol.md` (parallel when independent):

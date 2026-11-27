@@ -44,6 +44,9 @@ After each worker finishes, the lead appends every message line to `board.md` us
 - **BLOCKED**: Pause the run and ask the user how to proceed.
 - **DECISION**: Record it on `board.md` (suggest `/sdlc-adr` if the decision is architectural).
 - **Scoped briefs**: Every `<role>-brief.md` includes only the `board.md` lines addressed to that role or to `all`, plus the `contracts/` paths to read. Never forward the lead's conversation history.
+- **Normalize messages**:
+  - `to` must be exactly one known role or `all`. Map aliases such as `lead` to `tech-lead`, and split multi-recipient lines.
+  - `TYPE` must be in the enum; otherwise map it to the closest type (e.g. a status update becomes `HANDOFF`) and note the normalization.
 
 ## Workflows
 
@@ -72,6 +75,8 @@ When a `gate` step is reached, set its status to `waiting-gate`, present the pro
 
 - On `FAIL`, follow the step's `on_fail` target (resetting the target and its dependents to `pending`, and recording the entry in `sendbacks`).
 - **Circuit breaker**: if the same step fails twice (`attempts >= 2`), stop the workflow and ask the user.
+- **Step logs**: script steps save their full output to `.claude/tasks/<slug>/<step>.log`; owner routing reads failing paths from that log.
+- **Flaky failures**: on a failure that does not reproduce, rerun once; if it passes, record it as flaky on `board.md` and surface it at the next gate instead of silently passing.
 
 ## Resume
 
@@ -79,7 +84,7 @@ Running `resume <slug>` reads `.claude/tasks/<slug>/run.json` and continues from
 
 ## Owner Routing
 
-- For `on_fail: owner`, the lead maps failing file paths (from the report or check output) to the role whose team-config `paths` contain them, resetting that role's step and its dependents to `pending`. If paths are ambiguous or unowned, ask the user.
+- For `on_fail: owner`, the lead maps failing file paths (from the report or check output) to the role whose team-config `paths` contain them, resetting that role's step and its dependents to `pending`. When paths overlap, the longest matching prefix wins; on a tie, or if paths are ambiguous or unowned, ask the user.
 
 ## Step Order Rationale
 

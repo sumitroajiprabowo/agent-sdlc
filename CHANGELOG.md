@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-11-27
+
+### Fixed
+- Hardened multi-CLI worker sandboxing in `team-dispatch.md` based on findings from a real end-to-end multi-CLI run: inline `contracts/` and scoped board lines into briefs, restrict write workers to file edits while the lead runs checks, treat empty or permission-denied exit-0 outputs as `FAIL`, and extract only the final report block from the last `Status:` line.
+- Added a one-line read-only model probe during `/sdlc-start-orchestration` setup before saving a role's CLI+model so unsupported models are caught early.
+- Checked separation of duties on every loaded team config at the active roster confirmation step, not only during initial setup.
+- Normalized inter-role messages in `team-protocol.md` (single known recipient or `all` with alias mapping/splitting, and enum `TYPE` enforcement) and resolved overlapping owner `paths` by longest matching prefix (asking the user on a tie).
+- Saved full script step output to `.claude/tasks/<slug>/<step>.log` for owner routing and required rerunning non-reproducing failures once, recording passes as flaky on `board.md` for the next gate.
+
 ## [0.5.1] - 2026-11-27
 
 ### Changed
