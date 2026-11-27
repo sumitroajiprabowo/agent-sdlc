@@ -142,7 +142,8 @@ Run each SDLC role on its own CLI and model across isolated git worktrees:
 |---|---|---|
 | `tech-lead` | `claude` | `claude-opus-5-5` |
 | `backend` | `agy` | `gemini-4-neon-medium` |
-| `frontend` | `codex` | `gpt-astra` |
+| `frontend` | `codex` | `gpt-6.2-sol` |
+| `mobile` | `agy` | `gemini-4-neon-medium` |
 | `qa` | `opencode` | `opencode/deepseek-v4.1-flash-free` |
 
 ```bash

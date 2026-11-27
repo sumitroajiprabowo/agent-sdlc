@@ -11,9 +11,9 @@
     {
       "id": "fix",
       "type": "agent",
-      "role": "backend",
+      "role": "owner",
       "needs": ["reproduce"],
-      "artifacts": ["backend-report.md"]
+      "artifacts": ["fix-report.md"]
     },
     {
       "id": "checks",

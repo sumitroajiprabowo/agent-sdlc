@@ -35,10 +35,17 @@
       "artifacts": ["frontend-report.md"]
     },
     {
+      "id": "mobile",
+      "type": "agent",
+      "role": "mobile",
+      "needs": ["gate-design"],
+      "artifacts": ["mobile-report.md"]
+    },
+    {
       "id": "integrate",
       "type": "agent",
       "role": "tech-lead",
-      "needs": ["backend", "frontend"],
+      "needs": ["backend", "frontend", "mobile"],
       "artifacts": ["integrate-report.md"],
       "on_fail": "owner"
     },

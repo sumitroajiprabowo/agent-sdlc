@@ -11,7 +11,7 @@ If no task was given, ask for an issue number/URL, one-line description, `setup`
 3. If no config exists or `$ARGUMENTS` is `setup`, run setup:
    - Detect CLIs with `command -v claude codex agy opencode`.
    - List models via `agy models` and `opencode models`; for `claude` and `codex`, ask with suggestions.
-   - For each role (`tech-lead`, `backend`, `frontend`, `qa`, `security`, `devops`, `reviewer`, plus any custom role), ask: enabled, CLI, model, and owned paths.
+   - For each role (`tech-lead`, `backend`, `frontend`, `mobile`, `qa`, `security`, `devops`, `reviewer`, plus any custom role), ask: enabled, CLI, model, and owned paths.
    - Warn and ask for another model if `reviewer` or `security` shares the same CLI+model as any write role (separation of duties).
    - Before saving, probe each chosen CLI+model with a one-line read-only call (see `team-dispatch.md`).
    - Ask whether to save globally (`~/.sdlc-kit/team.json`) or per project (`.sdlc/team.json`), then write JSON.

@@ -792,11 +792,17 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'Worker Sandbox Rules',
     'Inline context',
     'Edit-only',
+    'read-only inspection',
+    'no shell',
+    'do not call any tool',
     'Empty means FAIL',
     'Model probe',
+    'usage-limit',
+    'mobile',
   ]) {
     assert.ok(ref.includes(snippet), `team-dispatch.md missing "${snippet}"`);
   }
+  assert.equal(ref.includes('gpt-astra'), false, 'team-dispatch.md must not include gpt-astra');
   assert.ok(/agy --model M --mode accept-edits -p "/.test(ref), 'team-dispatch.md must pass -p last with prompt for agy');
 
   const protocol = fs.readFileSync(path.join(refsDir, 'team-protocol.md'), 'utf8');
@@ -815,6 +821,11 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'longest matching prefix',
     '.log',
     'flaky',
+    'skipped',
+    'Multi-owner',
+    'Downstream owner',
+    'Disputed finding',
+    'Contract drift',
   ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }
@@ -842,6 +853,12 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     assert.ok(wf.steps.some((s) => s.type === 'gate'), `${wfFile} must include at least one gate step`);
     for (const step of wf.steps) {
       assert.ok(allowedTypes.has(step.type), `${wfFile} step "${step.id}" has invalid type "${step.type}"`);
+      if (step.type === 'agent') {
+        assert.ok(
+          typeof step.role === 'string' && step.role.length > 0,
+          `${wfFile} agent step "${step.id}" must have a non-empty role`,
+        );
+      }
       for (const dep of step.needs ?? []) {
         assert.ok(byId.has(dep), `${wfFile} step "${step.id}" references unknown needs "${dep}"`);
       }
@@ -879,6 +896,13 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
   assert.ok(featureById.get('qa')?.needs?.includes('review'), 'feature.json qa must depend on review');
   assert.ok(featureById.get('qa')?.needs?.includes('security'), 'feature.json qa must depend on security');
   assert.ok(feature.steps.some((s) => s.role === 'devops'), 'feature.json must include a devops step');
+  assert.equal(featureById.get('mobile')?.role, 'mobile', 'feature.json must have step mobile with role mobile');
+  for (const dep of ['backend', 'frontend', 'mobile']) {
+    assert.ok(featureById.get('integrate')?.needs?.includes(dep), `feature.json integrate must depend on ${dep}`);
+  }
+  const bugfix = workflows.get('bugfix.json')!;
+  const bugfixById = new Map(bugfix.steps.map((s) => [s.id, s]));
+  assert.equal(bugfixById.get('fix')?.role, 'owner', 'bugfix.json fix step must have role "owner"');
 
   const forbiddenFlags = /dangerously|--yolo|bypassPermissions/;
   assert.equal(forbiddenFlags.test(cmd), false, 'sdlc-start-orchestration.md must not include permission-bypass flags');
