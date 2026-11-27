@@ -800,6 +800,11 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'Model probe',
     'usage-limit',
     'mobile',
+    '--conversation',
+    'exec resume',
+    'sandbox_mode',
+    '--session',
+    'sessionID',
   ]) {
     assert.ok(ref.includes(snippet), `team-dispatch.md missing "${snippet}"`);
   }
@@ -831,6 +836,7 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'DISSENT',
     'team-debate.md',
     'only the user approves',
+    '"sessions"',
   ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }
@@ -853,10 +859,13 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'never approves a gate',
     'may not skip',
     'Status: <VALUE>',
+    'Live Threads',
+    'answer only',
   ]) {
     assert.ok(debate.includes(snippet), `team-debate.md missing "${snippet}"`);
   }
   assert.equal(debate.includes('BLOCKER |'), false, 'team-debate.md must not include BLOCKER |');
+  assert.equal(debate.includes('<slug>-<role>'), false, 'team-debate.md must not include <slug>-<role>');
 
   interface WorkflowStep {
     id: string;

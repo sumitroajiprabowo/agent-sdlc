@@ -20,21 +20,25 @@ Supplements `team-protocol.md` with pre-implementation design review, bounded de
 
 ## Dissent
 
-- A role that disagrees with a final `DECISION` posts `DISSENT #<n> <reason>`.
-- Dissent never blocks the run, but every gate lists all open `DISSENT` lines and the user rules on them (approve as-is, or send back).
+- A role that disagrees with a final `DECISION` posts `DISSENT #<n> <reason>`. Dissent never blocks the run, but every gate lists all open `DISSENT` lines and the user rules on them (approve as-is, or send back).
 
 ## Peer Messages
 
-- Workers address the owning role directly (e.g. `frontend` → `backend`), not the lead.
-- The lead relays peer lines **verbatim** (quote the original board line; never paraphrase) and dispatches the recipient in the next wave.
-- Questions about another role's owned paths or contract area must be answered by that role; the lead may answer only process questions.
+- Workers address the owning role directly (e.g. `frontend` → `backend`), not the lead; questions about another role's owned paths or contract area must be answered by that role (the lead answers only process questions).
+- The lead relays peer lines **verbatim** (quote the original board line; never paraphrase) and dispatches the recipient in the next wave (or immediately via Live Threads).
 - Workers may read `board.md` directly (read-only) for full thread context; only the lead appends to it.
 
 ## Lead Limits
 
-- The lead never approves a gate on the user's behalf; non-interactive or unattended runs stop at `waiting-gate`.
+- The lead never approves a gate on the user's behalf (non-interactive or unattended runs stop at `waiting-gate`) and records every decision it makes alone as `DECISION` with reason so it is listed at the next gate.
 - After any send-back that changes code, every downstream verification step (`checks`, `review`, `security`, `qa`) reruns by dispatching its role (scoped to the changed files is fine); the lead may not skip one, and may not substitute its own judgment or a passing test suite for a role's verdict.
-- The lead records every decision it makes alone as `DECISION` with reason so it is listed at the next gate.
+
+## Live Threads
+
+- **Session per role per run**: on a role's first dispatch the lead records its session in `run.json` `sessions` (id captured from the first run's output for every CLI); later dispatches of that role resume it instead of starting fresh.
+- **Immediate relay**: when a report has a `QUESTION`/`OBJECTION` to a peer, the lead resumes the recipient's session at once with the original line verbatim, then resumes the asker's session with the reply; repeat until the thread closes (max 2 rounds, as in Threads); every turn goes to `board.md` verbatim.
+- **Mode preserved**: a resumed role keeps its mode—read-only stays read-only; a write role resumed for a question is told "answer only, do not edit".
+- **Fallback**: if resume fails (unknown/expired session) or setup's probe shows the CLI cannot resume, dispatch a fresh session with the thread lines inlined and note it on the board.
 
 ## Message Enum
 

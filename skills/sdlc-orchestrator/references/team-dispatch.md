@@ -47,6 +47,11 @@ Pass the brief as the prompt argument `"$(cat .claude/tasks/<slug>/<role>-brief.
 | `agy` | `agy --model M --mode accept-edits -p "<brief>"` | `agy --model M --mode plan -p "<brief>"` |
 | `opencode` | `opencode run -m provider/model "<brief>"` | `opencode run -m provider/model --agent plan "<brief>"` |
 
+Resume (same model/mode/sandbox flags as first dispatch; never permission-bypass flags):
+- `agy`: `agy --conversation <id> --model M --mode <same mode> -p "<msg>"` (capture `conversation_id` via `--output-format json`)
+- `codex`: `codex exec resume <id> -m M -c 'sandbox_mode="<same sandbox>"' "<msg>"` (id from `session id:` line; resume has no `-s`, so pass the sandbox via `-c`)
+- `opencode`: `opencode run -m provider/model --session <id> "<msg>"` (capture `sessionID` (`ses_...`) via `--format json`; custom ids are rejected; add `--agent plan` for read-only)
+
 Example write dispatch (`.claude/tasks/` is gitignored and lives only in the main checkout, so use an absolute path):
 
 ```bash

@@ -158,6 +158,7 @@ Built-in workflows (`feature`, `bugfix`) run agent, script, and human `gate` ste
 Run state is saved in `run.json`, so an interrupted run can continue with `/sdlc-start-orchestration resume <slug>`.
 Override or add project workflows in `.sdlc/workflows/<name>.json` and run them with `workflow=<name>`.
 Before `gate-design`, a parallel `design-review` panel critiques `contracts/api.md` using bounded debate threads, a strict message enum, and non-blocking `DISSENT` surfaced at gates (see [team-debate.md](skills/sdlc-orchestrator/references/team-debate.md)).
+Roles keep a per-run session in `run.json` so peer `QUESTION`/`OBJECTION` threads resume live instead of waiting for the next wave.
 See [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) for the board format, routing rules, and workflow schema.
 
 ---
