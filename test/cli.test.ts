@@ -275,8 +275,10 @@ test('--cursor and --opencode install, detect, and uninstall cleanly', () => {
 
   runInstall({ targets: ['cursor', 'opencode'], homeDir: home });
   assert.ok(fs.existsSync(path.join(home, '.cursor/skills/sdlc-workflow/SKILL.md')));
-  assert.ok(fs.existsSync(path.join(home, '.config/opencode/skills/sdlc-workflow/SKILL.md')));
+  // OpenCode also reads ~/.agents/skills, so shared skills are not copied into its own dir.
+  assert.equal(fs.existsSync(path.join(home, '.config/opencode/skills/sdlc-workflow')), false);
   assert.ok(fs.existsSync(path.join(home, '.agents/skills/sdlc-workflow/SKILL.md')));
+  assert.equal(runDoctor({ homeDir: home, cwd: home }).checks.find((c) => c.area === 'opencode-commands')?.level, 'OK');
 
   runInstall({ targets: ['cursor', 'opencode'], uninstall: true, homeDir: home });
   assert.equal(fs.existsSync(path.join(home, '.cursor/skills/sdlc-workflow')), false);
@@ -506,13 +508,58 @@ test('--cursor and --opencode also install and uninstall the 9 slash commands', 
   runInstall({ targets: ['cursor', 'opencode'], homeDir: home });
   for (const cmd of COMMAND_FILES) {
     assert.ok(fs.existsSync(path.join(home, '.cursor/commands', cmd)));
-    assert.ok(fs.existsSync(path.join(home, '.config/opencode/command', cmd)));
+    assert.ok(fs.existsSync(path.join(home, '.config/opencode/commands', cmd)));
   }
   runInstall({ targets: ['cursor', 'opencode'], uninstall: true, homeDir: home });
   for (const cmd of COMMAND_FILES) {
     assert.equal(fs.existsSync(path.join(home, '.cursor/commands', cmd)), false);
-    assert.equal(fs.existsSync(path.join(home, '.config/opencode/command', cmd)), false);
+    assert.equal(fs.existsSync(path.join(home, '.config/opencode/commands', cmd)), false);
   }
+});
+
+test('--opencode upgrade moves 0.4.0 commands and skill copies, keeps edited files', () => {
+  const home = makeTempDir('sdlc-kit-oc-up-');
+  const oldCmdDir = path.join(home, '.config/opencode/command');
+  const dupSkill = path.join(home, '.config/opencode/skills/sdlc-workflow/SKILL.md');
+  fs.mkdirSync(oldCmdDir, { recursive: true });
+  fs.mkdirSync(path.dirname(dupSkill), { recursive: true });
+  const files: Record<string, string> = {};
+  const hash = (p: string): string => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
+  for (const cmd of COMMAND_FILES) {
+    fs.copyFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'commands', cmd), path.join(oldCmdDir, cmd));
+    files[path.join(oldCmdDir, cmd)] = hash(path.join(oldCmdDir, cmd));
+  }
+  fs.copyFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'skills/sdlc-workflow/SKILL.md'), dupSkill);
+  files[dupSkill] = hash(dupSkill);
+  fs.appendFileSync(path.join(oldCmdDir, 'sdlc-qa.md'), '\nmy edit\n');
+  fs.mkdirSync(path.join(home, '.sdlc-kit'));
+  fs.writeFileSync(path.join(home, '.sdlc-kit/manifest.json'), JSON.stringify({ version: '0.4.0', files, settings: {} }));
+
+  const result = runInstall({ targets: ['opencode'], homeDir: home });
+  assert.equal(fs.existsSync(path.join(oldCmdDir, 'sdlc-start.md')), false);
+  assert.ok(fs.existsSync(path.join(oldCmdDir, 'sdlc-qa.md')), 'edited command must be kept');
+  assert.ok(result.warnings.some((w) => w.includes('sdlc-qa.md')));
+  assert.equal(fs.existsSync(dupSkill), false);
+  assert.ok(fs.existsSync(path.join(home, '.config/opencode/commands/sdlc-start.md')));
+});
+
+test('--antigravity installs the 9 commands as explicit-only global skills', () => {
+  const home = makeTempDir('sdlc-kit-ag-cmd-');
+  runInstall({ targets: ['antigravity'], homeDir: home });
+  for (const cmd of COMMAND_FILES) {
+    const name = cmd.replace(/\.md$/, '');
+    const skill = fs.readFileSync(path.join(home, '.gemini/config/skills', name, 'SKILL.md'), 'utf8');
+    const fm = skill.split('---')[1] ?? '';
+    assert.match(fm, new RegExp(`^name: ${name}$`, 'm'));
+    assert.match(fm, /^description: ".+"$/m);
+    assert.match(fm, /^disable-model-invocation: true$/m);
+    assert.ok(!skill.includes('$ARGUMENTS'), `${name} still references $ARGUMENTS`);
+  }
+  assert.equal(fs.existsSync(path.join(home, '.gemini/config/skills/sdlc-workflow')), false);
+  assert.equal(runDoctor({ homeDir: home, cwd: home }).checks.find((c) => c.area === 'antigravity-commands')?.level, 'OK');
+
+  runInstall({ targets: ['antigravity'], uninstall: true, homeDir: home });
+  assert.deepEqual(fs.readdirSync(path.join(home, '.gemini/config/skills')), []);
 });
 
 test('versions stay in sync across package.json, plugin.json, and CHANGELOG', () => {

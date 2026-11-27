@@ -117,6 +117,11 @@ export const RESERVED_COMMAND_NAMES = [
 const COMMAND_DIRS: Record<CommandTarget, string[]> = {
   claude: ['.claude', 'commands'],
   cursor: ['.cursor', 'commands'],
+  opencode: ['.config', 'opencode', 'commands'],
+};
+
+// Command dirs used by earlier releases; managed files there are migrated away.
+const LEGACY_COMMAND_DIRS: Partial<Record<CommandTarget, string[]>> = {
   opencode: ['.config', 'opencode', 'command'],
 };
 
@@ -125,22 +130,34 @@ const CODEX_LEGACY_PROMPT_DIR = ['.codex', 'prompts'];
 const CODEX_SKILLS_DIR = ['.codex', 'skills'];
 const CODEX_EXPLICIT_POLICY = 'policy:\n  allow_implicit_invocation: false\n';
 
-/** Convert a slash-command markdown file into a Codex SKILL.md invoked as `$<name>`. */
-export function codexSkillFromCommand(markdown: string, name: string): string {
+// Antigravity has no command dir; commands install as explicit-only global skills.
+const ANTIGRAVITY_SKILLS_DIR = ['.gemini', 'config', 'skills'];
+
+function skillFromCommand(markdown: string, name: string, sigil: '$' | '/', extraFront: string): string {
   const text = markdown.replace(/\r\n/g, '\n');
   const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
   const front = m?.[1] ?? '';
   const body = m?.[2] ?? text;
   const description = front.match(/^description:\s*(.+)$/m)?.[1] ?? `"${name}"`;
-  const converted = body
+  let converted = body
     .replace(/`\$ARGUMENTS`/g, "the user's request")
-    .replace(/\$ARGUMENTS/g, "the user's request")
-    .replace(/(^|[\s`(])\/(sdlc-[a-z-]+)/g, '$1$$$2');
+    .replace(/\$ARGUMENTS/g, "the user's request");
+  if (sigil === '$') converted = converted.replace(/(^|[\s`(])\/(sdlc-[a-z-]+)/g, '$1$$$2');
   return (
-    `---\nname: ${name}\ndescription: ${description}\n---\n\n` +
-    `Invoked explicitly as \`$${name}\`; the user's request is the text after it.\n\n` +
+    `---\nname: ${name}\ndescription: ${description}\n${extraFront}---\n\n` +
+    `Invoked explicitly as \`${sigil}${name}\`; the user's request is the text after it.\n\n` +
     converted.replace(/^\n+/, '')
   );
+}
+
+/** Convert a slash-command markdown file into a Codex SKILL.md invoked as `$<name>`. */
+export function codexSkillFromCommand(markdown: string, name: string): string {
+  return skillFromCommand(markdown, name, '$', '');
+}
+
+/** Convert a slash-command markdown file into an Antigravity SKILL.md invoked as `/<name>`. */
+export function antigravitySkillFromCommand(markdown: string, name: string): string {
+  return skillFromCommand(markdown, name, '/', 'disable-model-invocation: true\n');
 }
 
 const CLAUDE_OPTIMIZE_ENV: Record<string, string> = {
@@ -654,6 +671,12 @@ export function runInstall(options: RunOptions = {}): RunResult {
     for (const old of LEGACY_COMMAND_FILES) {
       removeLegacyManagedFile(ctx, path.join(cmdDir, old));
     }
+    const legacyDir = LEGACY_COMMAND_DIRS[target];
+    if (legacyDir) {
+      for (const old of [...LEGACY_COMMAND_FILES, ...COMMAND_FILES]) {
+        removeLegacyManagedFile(ctx, path.join(homeDir, ...legacyDir, old));
+      }
+    }
     for (const cmd of COMMAND_FILES) {
       const src = path.join(packageRoot, 'commands', cmd);
       const dst = path.join(cmdDir, cmd);
@@ -683,14 +706,21 @@ export function runInstall(options: RunOptions = {}): RunResult {
     for (const cmd of COMMAND_FILES) {
       removeLegacyManagedFile(ctx, path.join(promptDir, cmd));
     }
+    syncCommandSkills(CODEX_SKILLS_DIR, (src, name) => [
+      ['SKILL.md', codexSkillFromCommand(src, name)],
+      [path.join('agents', 'openai.yaml'), CODEX_EXPLICIT_POLICY],
+    ]);
+  };
+
+  const syncCommandSkills = (
+    skillsDir: string[],
+    render: (src: string, name: string) => Array<[string, string]>,
+  ): void => {
     for (const cmd of COMMAND_FILES) {
       const name = cmd.replace(/\.md$/, '');
-      const dir = path.join(homeDir, ...CODEX_SKILLS_DIR, name);
+      const dir = path.join(homeDir, ...skillsDir, name);
       const src = fs.readFileSync(path.join(packageRoot, 'commands', cmd), 'utf8');
-      const files: Array<[string, string]> = [
-        ['SKILL.md', codexSkillFromCommand(src, name)],
-        [path.join('agents', 'openai.yaml'), CODEX_EXPLICIT_POLICY],
-      ];
+      const files = render(src, name);
       for (const [rel, content] of files) {
         const dst = path.join(dir, rel);
         if (uninstall) {
@@ -728,11 +758,16 @@ export function runInstall(options: RunOptions = {}): RunResult {
       syncCodexCommands();
     } else if (target === 'antigravity') {
       addSkillsOnce(path.join(homeDir, '.agents', 'skills'));
+      syncCommandSkills(ANTIGRAVITY_SKILLS_DIR, (src, name) => [
+        ['SKILL.md', antigravitySkillFromCommand(src, name)],
+      ]);
     } else if (target === 'cursor') {
       addSkillsOnce(path.join(homeDir, '.cursor', 'skills'));
       syncCommands('cursor');
     } else if (target === 'opencode') {
-      addSkillsOnce(path.join(homeDir, '.config', 'opencode', 'skills'));
+      // OpenCode also reads ~/.agents/skills; a copy in its own skills dir only duplicates
+      // the same IDs, so shared skills live in ~/.agents/skills (0.4.0 copies removed).
+      uninstallSkillsFromDir(ctx, path.join(homeDir, '.config', 'opencode', 'skills'));
       addSkillsOnce(path.join(homeDir, '.agents', 'skills'));
       syncCommands('opencode');
     } else if (target === 'local') {
@@ -776,6 +811,8 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
     ['codex', path.join(homeDir, '.codex/skills/sdlc-workflow/SKILL.md')],
     ['antigravity', path.join(homeDir, '.agents/skills/sdlc-workflow/SKILL.md')],
     ['cursor', path.join(homeDir, '.cursor/skills/sdlc-workflow/SKILL.md')],
+    ['antigravity', path.join(homeDir, '.gemini/config/skills/sdlc-start/SKILL.md')],
+    ['opencode', path.join(homeDir, '.config/opencode/commands/sdlc-start.md')],
     ['opencode', path.join(homeDir, '.config/opencode/skills/sdlc-workflow/SKILL.md')],
     ['local', path.join(homeDir, LOCAL_PROMPT_NAME)],
     ['local', path.join(homeDir, PRE_RENAME_LOCAL_PROMPT_NAME)],
@@ -821,6 +858,26 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
       codexCount === COMMAND_FILES.length ? 'OK' : 'WARN',
       'codex-commands',
       `${codexCount}/${COMMAND_FILES.length} command skills installed in ~/.codex/skills/ (run as $sdlc-start)`,
+    );
+  }
+  const agSkillsDir = path.join(homeDir, ...ANTIGRAVITY_SKILLS_DIR);
+  if (fs.existsSync(agSkillsDir)) {
+    const agCount = COMMAND_FILES.filter((f) =>
+      fs.existsSync(path.join(agSkillsDir, f.replace(/\.md$/, ''), 'SKILL.md')),
+    ).length;
+    add(
+      agCount === COMMAND_FILES.length ? 'OK' : 'WARN',
+      'antigravity-commands',
+      `${agCount}/${COMMAND_FILES.length} command skills installed in ~/.gemini/config/skills/ (run as /sdlc-start)`,
+    );
+  }
+  const ocDir = path.join(homeDir, '.config', 'opencode');
+  if (fs.existsSync(ocDir)) {
+    const ocCount = COMMAND_FILES.filter((f) => fs.existsSync(path.join(ocDir, 'commands', f))).length;
+    add(
+      ocCount === COMMAND_FILES.length ? 'OK' : 'WARN',
+      'opencode-commands',
+      `${ocCount}/${COMMAND_FILES.length} commands installed in ~/.config/opencode/commands/`,
     );
   }
 
