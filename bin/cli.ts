@@ -12,7 +12,7 @@ Usage:
 
 Targets (auto-detected if omitted):
   --claude            Install skills, 9 slash commands & 2 subagents to ~/.claude/
-  --codex             Install skills & 9 prompts to ~/.codex/ and ~/.agents/skills/
+  --codex             Install skills to ~/.agents/skills/ and 9 \$sdlc-* skills to ~/.codex/skills/
   --antigravity       Install skills to ~/.agents/skills/
   --cursor            Install skills & commands to ~/.cursor/
   --opencode          Install skills & commands to ~/.config/opencode/ and ~/.agents/skills/

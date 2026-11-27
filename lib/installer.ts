@@ -17,7 +17,7 @@ function findPackageRoot(start: string): string {
 export const DEFAULT_PACKAGE_ROOT = findPackageRoot(__dirname);
 
 export type Target = 'claude' | 'codex' | 'antigravity' | 'cursor' | 'opencode' | 'local' | 'project';
-type CommandTarget = 'claude' | 'codex' | 'cursor' | 'opencode';
+type CommandTarget = 'claude' | 'cursor' | 'opencode';
 
 export interface InstallerOptions {
   targets: Target[];
@@ -116,10 +116,32 @@ export const RESERVED_COMMAND_NAMES = [
 // Agents with a custom slash-command directory that accepts our markdown commands.
 const COMMAND_DIRS: Record<CommandTarget, string[]> = {
   claude: ['.claude', 'commands'],
-  codex: ['.codex', 'prompts'],
   cursor: ['.cursor', 'commands'],
   opencode: ['.config', 'opencode', 'command'],
 };
+
+// Codex removed custom prompts (~/.codex/prompts); commands install as explicit-only skills.
+const CODEX_LEGACY_PROMPT_DIR = ['.codex', 'prompts'];
+const CODEX_SKILLS_DIR = ['.codex', 'skills'];
+const CODEX_EXPLICIT_POLICY = 'policy:\n  allow_implicit_invocation: false\n';
+
+/** Convert a slash-command markdown file into a Codex SKILL.md invoked as `$<name>`. */
+export function codexSkillFromCommand(markdown: string, name: string): string {
+  const text = markdown.replace(/\r\n/g, '\n');
+  const m = text.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  const front = m?.[1] ?? '';
+  const body = m?.[2] ?? text;
+  const description = front.match(/^description:\s*(.+)$/m)?.[1] ?? `"${name}"`;
+  const converted = body
+    .replace(/`\$ARGUMENTS`/g, "the user's request")
+    .replace(/\$ARGUMENTS/g, "the user's request")
+    .replace(/(^|[\s`(])\/(sdlc-[a-z-]+)/g, '$1$$$2');
+  return (
+    `---\nname: ${name}\ndescription: ${description}\n---\n\n` +
+    `Invoked explicitly as \`$${name}\`; the user's request is the text after it.\n\n` +
+    converted.replace(/^\n+/, '')
+  );
+}
 
 const CLAUDE_OPTIMIZE_ENV: Record<string, string> = {
   CLAUDE_CODE_SUBAGENT_MODEL: 'sonnet',
@@ -312,6 +334,24 @@ function installManagedFile(ctx: Context, src: string, dst: string): void {
   }
   copyFileAction(src, dst, ctx.dryRun, ctx.actions);
   ctx.manifest.files[dst] = srcHash;
+}
+
+/** Write generated content to a managed file, with the same ownership rules as installManagedFile. */
+function installManagedContent(ctx: Context, content: string, dst: string): void {
+  const hash = crypto.createHash('sha256').update(content).digest('hex');
+  if (fs.existsSync(dst)) {
+    const cur = sha256(dst);
+    if (cur !== hash && cur !== ctx.manifest.files[dst] && !ctx.force) {
+      ctx.warnings.push(`Skipped ${dst}: exists and was not installed by sdlc-kit (use --force to overwrite)`);
+      return;
+    }
+  }
+  if (!ctx.dryRun) {
+    fs.mkdirSync(path.dirname(dst), { recursive: true });
+    fs.writeFileSync(dst, content, 'utf8');
+  }
+  ctx.actions.push(`${ctx.dryRun ? '[dry-run] ' : ''}install ${dst}`);
+  ctx.manifest.files[dst] = hash;
 }
 
 /** Remove a managed file only if it is still exactly what we installed. */
@@ -638,6 +678,31 @@ export function runInstall(options: RunOptions = {}): RunResult {
     }
   };
 
+  const syncCodexCommands = (): void => {
+    const promptDir = path.join(homeDir, ...CODEX_LEGACY_PROMPT_DIR);
+    for (const cmd of COMMAND_FILES) {
+      removeLegacyManagedFile(ctx, path.join(promptDir, cmd));
+    }
+    for (const cmd of COMMAND_FILES) {
+      const name = cmd.replace(/\.md$/, '');
+      const dir = path.join(homeDir, ...CODEX_SKILLS_DIR, name);
+      const src = fs.readFileSync(path.join(packageRoot, 'commands', cmd), 'utf8');
+      const files: Array<[string, string]> = [
+        ['SKILL.md', codexSkillFromCommand(src, name)],
+        [path.join('agents', 'openai.yaml'), CODEX_EXPLICIT_POLICY],
+      ];
+      for (const [rel, content] of files) {
+        const dst = path.join(dir, rel);
+        if (uninstall) {
+          uninstallManagedFile(ctx, null, dst);
+        } else {
+          installManagedContent(ctx, content, dst);
+        }
+      }
+      if (uninstall) removeEmptyDirs(dir, ctx.dryRun);
+    }
+  };
+
   for (const target of targets) {
     if (target === 'claude') {
       addSkillsOnce(path.join(homeDir, '.claude', 'skills'));
@@ -656,9 +721,11 @@ export function runInstall(options: RunOptions = {}): RunResult {
         applyClaudeOptimize(ctx);
       }
     } else if (target === 'codex') {
-      addSkillsOnce(path.join(homeDir, '.codex', 'skills'));
+      // Codex reads both ~/.codex/skills and ~/.agents/skills and lists a name found in
+      // both twice, so shared skills live only in ~/.agents/skills (0.3.0 copies removed).
+      uninstallSkillsFromDir(ctx, path.join(homeDir, ...CODEX_SKILLS_DIR));
       addSkillsOnce(path.join(homeDir, '.agents', 'skills'));
-      syncCommands('codex');
+      syncCodexCommands();
     } else if (target === 'antigravity') {
       addSkillsOnce(path.join(homeDir, '.agents', 'skills'));
     } else if (target === 'cursor') {
@@ -705,6 +772,7 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
 
   const locations: Array<[string, string]> = [
     ['claude', path.join(homeDir, '.claude/skills/sdlc-workflow/SKILL.md')],
+    ['codex', path.join(homeDir, '.codex/skills/sdlc-start/SKILL.md')],
     ['codex', path.join(homeDir, '.codex/skills/sdlc-workflow/SKILL.md')],
     ['antigravity', path.join(homeDir, '.agents/skills/sdlc-workflow/SKILL.md')],
     ['cursor', path.join(homeDir, '.cursor/skills/sdlc-workflow/SKILL.md')],
@@ -744,6 +812,18 @@ export function runDoctor(options: { homeDir?: string; cwd?: string; packageRoot
       add('WARN', 'duplicate-install', 'sdlc-kit is installed as a Claude plugin AND via npx; skills load twice. Uninstall one (npx sdlc-kit --claude --uninstall).');
     }
   }
+  const codexDir = path.join(homeDir, '.codex');
+  if (fs.existsSync(codexDir)) {
+    const codexCount = COMMAND_FILES.filter((f) =>
+      fs.existsSync(path.join(codexDir, 'skills', f.replace(/\.md$/, ''), 'SKILL.md')),
+    ).length;
+    add(
+      codexCount === COMMAND_FILES.length ? 'OK' : 'WARN',
+      'codex-commands',
+      `${codexCount}/${COMMAND_FILES.length} command skills installed in ~/.codex/skills/ (run as $sdlc-start)`,
+    );
+  }
+
   if (fs.existsSync(claudeDir)) {
     const cmdCount = COMMAND_FILES.filter((f) =>
       fs.existsSync(path.join(claudeDir, 'commands', f)),

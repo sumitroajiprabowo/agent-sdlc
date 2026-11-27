@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Codex removed custom prompts, so the 0.3.0 `~/.codex/prompts/` commands never loaded. `--codex` now installs the 9 commands as explicit-only skills in `~/.codex/skills/` (run them as `$sdlc-start`, `$sdlc-spec`, ...) and removes the old prompt files it installed.
+- `--codex` no longer copies the shared skills into `~/.codex/skills/`; Codex also reads `~/.agents/skills/` and listed them twice.
+- `--doctor` reports the installed Codex command skills.
+
 ## [0.3.0] - 2026-11-26
 
 ### Added
