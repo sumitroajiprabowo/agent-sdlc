@@ -773,9 +773,13 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
   assert.ok(cmd.includes('.sdlc/team.json'));
   assert.ok(cmd.includes('resume'));
   assert.ok(cmd.includes('team-protocol.md'));
+  assert.ok(cmd.includes('probe'), 'sdlc-start-orchestration.md must probe chosen models');
+  const rosterLine = cmd.split('\n').find((line) => line.includes('active roster table')) ?? '';
+  assert.ok(rosterLine.includes('shares'), 'sdlc-start-orchestration.md roster step must warn when roles share a CLI+model');
 
   const refsDir = path.join(DEFAULT_PACKAGE_ROOT, 'skills', 'sdlc-orchestrator', 'references');
   const ref = fs.readFileSync(path.join(refsDir, 'team-dispatch.md'), 'utf8');
+  assert.ok(ref.split('\n').length <= 90, 'team-dispatch.md must be <= 90 lines');
   for (const snippet of [
     'claude -p',
     'codex exec',
@@ -785,6 +789,11 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     '-s read-only',
     '--mode plan',
     '--agent plan',
+    'Worker Sandbox Rules',
+    'Inline context',
+    'Edit-only',
+    'Empty means FAIL',
+    'Model probe',
   ]) {
     assert.ok(ref.includes(snippet), `team-dispatch.md missing "${snippet}"`);
   }
@@ -802,6 +811,10 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'Separation of duties',
     'untrusted',
     'contracts/api.md',
+    'Normalize messages',
+    'longest matching prefix',
+    '.log',
+    'flaky',
   ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }

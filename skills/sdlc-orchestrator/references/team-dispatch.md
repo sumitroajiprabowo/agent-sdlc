@@ -53,6 +53,14 @@ TASKS="$PWD/.claude/tasks/<slug>"
   | tail -n 50 > "$TASKS/backend-report.md"
 ```
 
+## Worker Sandbox Rules
+
+- **Inline context**: inline the relevant `contracts/` files and the scoped board lines into `<role>-brief.md`. Some headless CLIs deny reads outside the worktree, so never rely on paths into the main checkout.
+- **Edit-only workers**: write roles edit files only. The lead runs lint/typecheck/test in the worktree after the worker returns. Headless CLIs may deny shell commands, and some sandboxes block network `listen`.
+- **Empty means FAIL**: treat an exit code 0 with no `Status:` line, or a "no output produced" / permission-denied message, as `FAIL` (it counts toward the circuit breaker).
+- **Report extraction**: keep only the final report block, from the last `Status:` line to the end, in `<role>-report.md`.
+- **Model probe**: before saving a role, probe its CLI+model with a one-line read-only call (e.g. reply `PONG`). On error, ask the user for another model. Account plans may not support every model.
+
 ## Worktree Isolation Recipe
 
 1. Create a worktree per write role:
