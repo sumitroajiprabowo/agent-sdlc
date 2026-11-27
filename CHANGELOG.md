@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-27
+
+### Changed
+- Added owner-based send back (`on_fail: "owner"`) so failed checks, reviews, security scans, and QA route back to the role owning the failing file paths.
+- Hardened the `feature` and `bugfix` workflows with an `integrate` step, deterministic `checks` before AI review, and parallel `review` + `security` steps.
+- Added a `devops` `release-plan` step covering feature flags, expand/contract migrations, observability, and rollback plans.
+- Enforced separation of duties (two-person review across CLI+model), untrusted worker message handling, contract verification against `contracts/api.md`, and `/sdlc-spec` / `/sdlc-adr` routing.
+
 ## [0.5.0] - 2026-11-27
 
 ### Added

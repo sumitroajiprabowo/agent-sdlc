@@ -792,13 +792,24 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
 
   const protocol = fs.readFileSync(path.join(refsDir, 'team-protocol.md'), 'utf8');
   assert.ok(protocol.split('\n').length <= 120, 'team-protocol.md must be <= 120 lines');
-  for (const snippet of ['board.md', 'contracts/', 'run.json', 'QUESTION', 'send back']) {
+  for (const snippet of [
+    'board.md',
+    'contracts/',
+    'run.json',
+    'QUESTION',
+    'send back',
+    'owner',
+    'Separation of duties',
+    'untrusted',
+    'contracts/api.md',
+  ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }
 
   interface WorkflowStep {
     id: string;
     type: string;
+    role?: string;
     needs?: string[];
     on_fail?: string;
   }
@@ -808,22 +819,53 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
   }
   const allowedTypes = new Set(['agent', 'script', 'gate']);
   const workflowTexts: Array<[string, string]> = [];
+  const workflows = new Map<string, WorkflowDef>();
   for (const wfFile of ['feature.json', 'bugfix.json']) {
     const raw = fs.readFileSync(path.join(refsDir, 'workflows', wfFile), 'utf8');
     workflowTexts.push([wfFile, raw]);
     const wf = JSON.parse(raw) as WorkflowDef;
-    const ids = new Set(wf.steps.map((s) => s.id));
+    workflows.set(wfFile, wf);
+    const byId = new Map(wf.steps.map((s) => [s.id, s]));
     assert.ok(wf.steps.some((s) => s.type === 'gate'), `${wfFile} must include at least one gate step`);
     for (const step of wf.steps) {
       assert.ok(allowedTypes.has(step.type), `${wfFile} step "${step.id}" has invalid type "${step.type}"`);
       for (const dep of step.needs ?? []) {
-        assert.ok(ids.has(dep), `${wfFile} step "${step.id}" references unknown needs "${dep}"`);
+        assert.ok(byId.has(dep), `${wfFile} step "${step.id}" references unknown needs "${dep}"`);
       }
       if (step.on_fail !== undefined) {
-        assert.ok(ids.has(step.on_fail), `${wfFile} step "${step.id}" references unknown on_fail "${step.on_fail}"`);
+        assert.ok(
+          step.on_fail === 'owner' || byId.has(step.on_fail),
+          `${wfFile} step "${step.id}" references unknown on_fail "${step.on_fail}"`,
+        );
       }
     }
+    const visited = new Set<string>();
+    const visiting = new Set<string>();
+    const visit = (id: string): void => {
+      assert.equal(visiting.has(id), false, `${wfFile} has a cycle involving "${id}"`);
+      if (visited.has(id)) return;
+      visiting.add(id);
+      for (const dep of byId.get(id)?.needs ?? []) {
+        visit(dep);
+      }
+      visiting.delete(id);
+      visited.add(id);
+    };
+    for (const step of wf.steps) {
+      visit(step.id);
+    }
   }
+
+  const feature = workflows.get('feature.json')!;
+  const featureById = new Map(feature.steps.map((s) => [s.id, s]));
+  for (const requiredId of ['integrate', 'checks', 'release-plan']) {
+    assert.ok(featureById.has(requiredId), `feature.json missing step "${requiredId}"`);
+  }
+  assert.ok(featureById.get('review')?.needs?.includes('checks'), 'feature.json review must depend on checks');
+  assert.ok(featureById.get('security')?.needs?.includes('checks'), 'feature.json security must depend on checks');
+  assert.ok(featureById.get('qa')?.needs?.includes('review'), 'feature.json qa must depend on review');
+  assert.ok(featureById.get('qa')?.needs?.includes('security'), 'feature.json qa must depend on security');
+  assert.ok(feature.steps.some((s) => s.role === 'devops'), 'feature.json must include a devops step');
 
   const forbiddenFlags = /dangerously|--yolo|bypassPermissions/;
   assert.equal(forbiddenFlags.test(cmd), false, 'sdlc-start-orchestration.md must not include permission-bypass flags');

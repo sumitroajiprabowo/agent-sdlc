@@ -35,37 +35,53 @@
       "artifacts": ["frontend-report.md"]
     },
     {
+      "id": "integrate",
+      "type": "agent",
+      "role": "tech-lead",
+      "needs": ["backend", "frontend"],
+      "artifacts": ["integrate-report.md"],
+      "on_fail": "owner"
+    },
+    {
+      "id": "checks",
+      "type": "script",
+      "run": "npm run lint && npm run typecheck && npm test",
+      "needs": ["integrate"],
+      "on_fail": "owner"
+    },
+    {
       "id": "review",
       "type": "agent",
       "role": "reviewer",
-      "needs": ["backend", "frontend"],
-      "on_fail": "backend"
+      "needs": ["checks"],
+      "on_fail": "owner"
     },
     {
       "id": "security",
       "type": "agent",
       "role": "security",
-      "needs": ["review"],
-      "on_fail": "backend"
-    },
-    {
-      "id": "test",
-      "type": "script",
-      "run": "npm test",
-      "needs": ["security"],
-      "on_fail": "backend"
+      "needs": ["checks"],
+      "on_fail": "owner"
     },
     {
       "id": "qa",
       "type": "agent",
       "role": "qa",
-      "needs": ["test"],
-      "on_fail": "frontend"
+      "needs": ["review", "security"],
+      "artifacts": ["qa-report.md"],
+      "on_fail": "owner"
+    },
+    {
+      "id": "release-plan",
+      "type": "agent",
+      "role": "devops",
+      "needs": ["qa"],
+      "artifacts": ["release-plan.md"]
     },
     {
       "id": "gate-accept",
       "type": "gate",
-      "needs": ["qa"]
+      "needs": ["release-plan"]
     }
   ]
 }

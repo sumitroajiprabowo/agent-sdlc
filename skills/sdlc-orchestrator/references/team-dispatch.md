@@ -11,7 +11,7 @@ Dispatch each SDLC role as a separate, fresh-context headless CLI process so eve
 | `frontend` | UI, 5 UI states, accessibility | Owned paths | Fast / cost |
 | `qa` | SDET, test pyramid, new tests | Test files only | Fast |
 | `security` | AppSec, OWASP + `ai-security-checklist.md` from `sdlc-workflow`, secrets, deps | Read-only | Strong |
-| `devops` | CI/CD, IaC, observability, release | Infra paths | Fast |
+| `devops` | CI/CD, IaC, observability, `release-plan` (flag, migration, observability, rollback) | Infra paths | Fast |
 | `reviewer` | Independent diff review | Read-only | Strong |
 
 Custom roles (e.g. `mobile`, `data`) can be added with the same schema, and any role can be disabled (`"enabled": false`).
@@ -68,3 +68,4 @@ TASKS="$PWD/.claude/tasks/<slug>"
 - **Fresh context only**: Never forward the lead's conversation history; send only `.claude/tasks/<slug>/<role>-brief.md`.
 - **Bounded output**: Always pipe worker stdout through `| tail -n 50` to keep the lead's context small.
 - **Cost tiering**: Reserve the strongest model for `tech-lead`, `reviewer`, and `security`; use fast, cost-effective models for write workers.
+- **Checks before AI review**: Run deterministic lint/typecheck/test checks before dispatching `reviewer` or `security`.
