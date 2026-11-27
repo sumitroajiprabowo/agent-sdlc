@@ -2,7 +2,7 @@
 
 # sdlc-kit
 
-**Ship features with AI agents without burning tokens: plan → code → QA → ship, in 9 slash commands.**
+**Ship features with AI agents without burning tokens: plan → code → QA → ship, in 10 slash commands.**
 
 [![npm](https://img.shields.io/npm/v/sdlc-kit?color=cb3837&logo=npm)](https://www.npmjs.com/package/sdlc-kit)
 [![CI](https://github.com/sumitroajiprabowo/sdlc-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/sumitroajiprabowo/sdlc-kit/actions/workflows/ci.yml)
@@ -26,7 +26,7 @@ Long sessions, bloated global instructions, full test logs, and whole chat histo
 
 - **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 8 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
 - **2 subagents** (Claude Code): `sdlc-reviewer` and `sdlc-tester`, independent read-only review and QA used by size M/L tasks.
-- **9 slash commands**: `/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`.
+- **10 slash commands**: `/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`, `/sdlc-start-orchestration`.
 - **Covers repo setup to production**: milestone slicing, 5-state frontend checklist, QA pyramid, bugfix vs production hotfix, CI/CD, and Expand & Contract database migrations.
 - **Size routing, spec gates, and resumable state**: `/sdlc-start` classifies tasks as S/M/L, `/sdlc-spec` pauses at an explicit approval gate before issue breakdown, and `.claude/HANDOFF.md` (`Task | Stage | Size`) plus gitignored `.claude/tasks/<slug>/` artifacts resume cleanly across `/clear`.
 - **Orchestrator protocol**: fresh-context worker briefings and worker reports under 30 lines.
@@ -45,7 +45,7 @@ The package is published on npm as [`sdlc-kit`](https://www.npmjs.com/package/sd
 ### Install for Specific Agents
 
 ```bash
-# Claude Code only (skills + 9 slash commands + 2 subagents)
+# Claude Code only (skills + 10 slash commands + 2 subagents)
 npx sdlc-kit --claude
 
 # Claude Code + token-saving preset: adds opusplan (only if you have no model set),
@@ -55,10 +55,10 @@ npx sdlc-kit --claude --optimize
 # Codex only
 npx sdlc-kit --codex
 
-# Antigravity (skills + 9 slash commands)
+# Antigravity (skills + 10 slash commands)
 npx sdlc-kit --antigravity
 
-# Cursor or OpenCode (skills + 9 slash commands)
+# Cursor or OpenCode (skills + 10 slash commands)
 npx sdlc-kit --cursor
 npx sdlc-kit --opencode
 
@@ -94,9 +94,9 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 | Flag | Description |
 |---|---|
-| `--claude` | Install skills, 9 slash commands & 2 subagents into `~/.claude/` |
-| `--codex` | Install skills into `~/.agents/skills/` and the 9 commands as explicit-only skills in `~/.codex/skills/` |
-| `--antigravity` | Install skills into `~/.agents/skills/` and the 9 commands as explicit-only skills in `~/.gemini/config/skills/` |
+| `--claude` | Install skills, 10 slash commands & 2 subagents into `~/.claude/` |
+| `--codex` | Install skills into `~/.agents/skills/` and the 10 commands as explicit-only skills in `~/.codex/skills/` |
+| `--antigravity` | Install skills into `~/.agents/skills/` and the 10 commands as explicit-only skills in `~/.gemini/config/skills/` |
 | `--cursor` | Install skills into `~/.cursor/skills/` and commands into `~/.cursor/commands/` |
 | `--opencode` | Install skills into `~/.agents/skills/` and commands into `~/.config/opencode/commands/` |
 | `--local` | Install a compact prompt (`<800` tokens) to `~/.sdlc-kit/LOCAL_PROMPT.md` |
@@ -126,11 +126,37 @@ npx skills add sumitroajiprabowo/sdlc-kit
 ### Usage by Agent
 
 - **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. Task state is saved in `.claude/HANDOFF.md` and `.claude/tasks/<slug>/`. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
-- **Codex**: Run the 9 commands as skills: `$sdlc-start #123`, `$sdlc-spec`, `$sdlc-ship`, and so on (Codex removed custom prompts, so `/prompts:` no longer works). They load only when invoked. `$sdlc-workflow` and `$sdlc-orchestrator` are also available.
-- **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents. The 9 commands (`/sdlc-start #123`, `/sdlc-spec`, ...) are explicit-only skills in `~/.gemini/config/skills/` and load only when invoked.
-- **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
-- **OpenCode**: Skills in `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/commands/`.
+- **Codex**: Run the 10 commands as skills: `$sdlc-start #123`, `$sdlc-spec`, `$sdlc-ship`, and so on (Codex removed custom prompts, so `/prompts:` no longer works). They load only when invoked. `$sdlc-workflow` and `$sdlc-orchestrator` are also available.
+- **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents. The 10 commands (`/sdlc-start #123`, `/sdlc-spec`, ...) are explicit-only skills in `~/.gemini/config/skills/` and load only when invoked.
+- **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 10 commands are available from `~/.cursor/commands/`.
+- **OpenCode**: Skills in `~/.agents/skills/` are discovered automatically; the 10 commands are in `~/.config/opencode/commands/`.
 - **Local LLMs**: Load `~/.sdlc-kit/LOCAL_PROMPT.md` as your system prompt or project instruction.
+
+---
+
+## Multi-model team
+
+Run each SDLC role on its own CLI and model across isolated git worktrees:
+
+| Role | CLI | Model |
+|---|---|---|
+| `tech-lead` | `claude` | `claude-opus-5-5` |
+| `backend` | `agy` | `gemini-4-neon-medium` |
+| `frontend` | `codex` | `gpt-astra` |
+| `qa` | `opencode` | `opencode/deepseek-v4.1-flash-free` |
+
+```bash
+/sdlc-start-orchestration setup
+/sdlc-start-orchestration "<task>"
+```
+
+Configs live in global `~/.sdlc-kit/team.json` and per-project `.sdlc/team.json` (overrides per role). See [team-dispatch.md](skills/sdlc-orchestrator/references/team-dispatch.md) for the full role catalog and headless invocations.
+
+Roles communicate only through the lead via `.claude/tasks/<slug>/board.md` and shared `contracts/` (such as `api.md`, `events.md`, `schema.md`).
+Built-in workflows (`feature`, `bugfix`) run agent, script, and human `gate` steps in dependency order, pausing at gates to approve, rerun with context, or send back to an earlier step.
+Run state is saved in `run.json`, so an interrupted run can continue with `/sdlc-start-orchestration resume <slug>`.
+Override or add project workflows in `.sdlc/workflows/<name>.json` and run them with `workflow=<name>`.
+See [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) for the board format, routing rules, and workflow schema.
 
 ---
 
