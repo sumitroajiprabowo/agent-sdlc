@@ -91,10 +91,11 @@ test('--claude --optimize merges settings safely, preserves plugins/hooks, and c
 test('--codex, --antigravity, and --local install to expected paths', () => {
   const home = makeTempDir('sdlc-kit-multi-');
   runInstall({ targets: ['codex'], homeDir: home });
-  assert.ok(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow/SKILL.md')));
-  assert.ok(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow/references/architecture-checklist.md')));
-  assert.ok(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow/references/monolith-and-microservices.md')));
   assert.ok(fs.existsSync(path.join(home, '.agents/skills/sdlc-workflow/SKILL.md')));
+  assert.ok(fs.existsSync(path.join(home, '.agents/skills/sdlc-workflow/references/architecture-checklist.md')));
+  assert.ok(fs.existsSync(path.join(home, '.agents/skills/sdlc-workflow/references/monolith-and-microservices.md')));
+  // Codex lists a skill found in both dirs twice, so shared skills skip ~/.codex/skills.
+  assert.equal(fs.existsSync(path.join(home, '.codex/skills/sdlc-workflow')), false);
 
   const homeAg = makeTempDir('sdlc-kit-ag-');
   runInstall({ targets: ['antigravity'], homeDir: homeAg });
@@ -653,16 +654,50 @@ test('subagents have quoted frontmatter and stay under 30 lines', () => {
   }
 });
 
-test('--codex installs and uninstalls the 9 prompts', () => {
+test('--codex installs the 9 commands as explicit-only Codex skills', () => {
   const home = makeTempDir('sdlc-kit-codex-');
   runInstall({ targets: ['codex'], homeDir: home });
   for (const cmd of COMMAND_FILES) {
-    assert.ok(fs.existsSync(path.join(home, '.codex/prompts', cmd)));
+    const name = cmd.replace(/\.md$/, '');
+    const skill = fs.readFileSync(path.join(home, '.codex/skills', name, 'SKILL.md'), 'utf8');
+    const fm = skill.split('---')[1] ?? '';
+    assert.match(fm, new RegExp(`^name: ${name}$`, 'm'));
+    assert.match(fm, /^description: ".+"$/m);
+    assert.ok(!skill.includes('$ARGUMENTS'), `${name} still references $ARGUMENTS`);
+    assert.ok(!/(^|[\s`(])\/sdlc-/.test(skill), `${name} still references /sdlc- slash commands`);
+    const policy = fs.readFileSync(path.join(home, '.codex/skills', name, 'agents/openai.yaml'), 'utf8');
+    assert.match(policy, /allow_implicit_invocation: false/);
   }
+  assert.equal(fs.existsSync(path.join(home, '.codex/prompts')), false);
+  assert.equal(runDoctor({ homeDir: home, cwd: home }).checks.find((c) => c.area === 'codex-commands')?.level, 'OK');
+
   runInstall({ targets: ['codex'], uninstall: true, homeDir: home });
+  assert.deepEqual(fs.readdirSync(path.join(home, '.codex/skills')), []);
+});
+
+test('--codex upgrade removes 0.3.0 prompts and duplicate skills, keeps edited files', () => {
+  const home = makeTempDir('sdlc-kit-codex-up-');
+  const promptDir = path.join(home, '.codex/prompts');
+  const dupSkill = path.join(home, '.codex/skills/sdlc-workflow/SKILL.md');
+  fs.mkdirSync(promptDir, { recursive: true });
+  fs.mkdirSync(path.dirname(dupSkill), { recursive: true });
+  const files: Record<string, string> = {};
   for (const cmd of COMMAND_FILES) {
-    assert.equal(fs.existsSync(path.join(home, '.codex/prompts', cmd)), false);
+    const src = path.join(DEFAULT_PACKAGE_ROOT, 'commands', cmd);
+    fs.copyFileSync(src, path.join(promptDir, cmd));
+    files[path.join(promptDir, cmd)] = crypto.createHash('sha256').update(fs.readFileSync(src)).digest('hex');
   }
+  fs.copyFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'skills/sdlc-workflow/SKILL.md'), dupSkill);
+  fs.appendFileSync(path.join(promptDir, 'sdlc-qa.md'), '\nmy edit\n');
+  fs.mkdirSync(path.join(home, '.sdlc-kit'));
+  fs.writeFileSync(path.join(home, '.sdlc-kit/manifest.json'), JSON.stringify({ version: '0.3.0', files, settings: {} }));
+
+  const result = runInstall({ targets: ['codex'], homeDir: home });
+  assert.equal(fs.existsSync(path.join(promptDir, 'sdlc-start.md')), false);
+  assert.ok(fs.existsSync(path.join(promptDir, 'sdlc-qa.md')), 'edited prompt must be kept');
+  assert.ok(result.warnings.some((w) => w.includes('sdlc-qa.md')));
+  assert.equal(fs.existsSync(dupSkill), false);
+  assert.ok(fs.existsSync(path.join(home, '.agents/skills/sdlc-workflow/SKILL.md')));
 });
 
 test('review and qa commands loop back to Stage: IMPLEMENT on failure', () => {

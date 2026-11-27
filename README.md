@@ -95,7 +95,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | Flag | Description |
 |---|---|
 | `--claude` | Install skills, 9 slash commands & 2 subagents into `~/.claude/` |
-| `--codex` | Install skills into `~/.codex/skills/` and `~/.agents/skills/`, and 9 prompts into `~/.codex/prompts/` |
+| `--codex` | Install skills into `~/.agents/skills/` and the 9 commands as explicit-only skills in `~/.codex/skills/` |
 | `--antigravity` | Install skills into `~/.agents/skills/` |
 | `--cursor` | Install skills into `~/.cursor/skills/` and commands into `~/.cursor/commands/` |
 | `--opencode` | Install skills into `~/.config/opencode/skills/` and `~/.agents/skills/`, commands into `~/.config/opencode/command/` |
@@ -126,7 +126,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 ### Usage by Agent
 
 - **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. Task state is saved in `.claude/HANDOFF.md` and `.claude/tasks/<slug>/`. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
-- **Codex**: Invoke `$sdlc-workflow` or `$sdlc-orchestrator` in your prompt. The 9 commands are custom prompts: run them as `/prompts:sdlc-start`, `/prompts:sdlc-spec`, and so on.
+- **Codex**: Run the 9 commands as skills: `$sdlc-start #123`, `$sdlc-spec`, `$sdlc-ship`, and so on (Codex removed custom prompts, so `/prompts:` no longer works). They load only when invoked. `$sdlc-workflow` and `$sdlc-orchestrator` are also available.
 - **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
 - **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
 - **OpenCode**: Skills in `~/.config/opencode/skills/` and `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/command/`.
@@ -155,7 +155,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | Target | Skills | Slash commands |
 |---|---|---|
 | `--claude` | `~/.claude/skills/` | `~/.claude/commands/` (+ subagents in `~/.claude/agents/`) |
-| `--codex` | `~/.codex/skills/`, `~/.agents/skills/` | `~/.codex/prompts/` |
+| `--codex` | `~/.agents/skills/` | `~/.codex/skills/sdlc-*/` (invoke as `$sdlc-start`) |
 | `--antigravity` | `~/.agents/skills/` | none |
 | `--cursor` | `~/.cursor/skills/` | `~/.cursor/commands/` |
 | `--opencode` | `~/.config/opencode/skills/`, `~/.agents/skills/` | `~/.config/opencode/command/` |
