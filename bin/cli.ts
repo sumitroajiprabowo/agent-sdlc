@@ -13,9 +13,9 @@ Usage:
 Targets (auto-detected if omitted):
   --claude            Install skills, 9 slash commands & 2 subagents to ~/.claude/
   --codex             Install skills to ~/.agents/skills/ and 9 \$sdlc-* skills to ~/.codex/skills/
-  --antigravity       Install skills to ~/.agents/skills/
+  --antigravity       Install skills to ~/.agents/skills/ and 9 /sdlc-* skills to ~/.gemini/config/skills/
   --cursor            Install skills & commands to ~/.cursor/
-  --opencode          Install skills & commands to ~/.config/opencode/ and ~/.agents/skills/
+  --opencode          Install skills to ~/.agents/skills/ and commands to ~/.config/opencode/commands/
   --local             Install a compact prompt (<800 tokens) to ~/.sdlc-kit/LOCAL_PROMPT.md
   --project           Scaffold docs/, PR template, AGENTS.md, CLAUDE.md bridge & .gitignore
   --all               Install to claude, codex, antigravity, cursor, opencode, and local

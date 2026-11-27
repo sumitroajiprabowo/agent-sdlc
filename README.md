@@ -55,7 +55,7 @@ npx sdlc-kit --claude --optimize
 # Codex only
 npx sdlc-kit --codex
 
-# Antigravity only
+# Antigravity (skills + 9 slash commands)
 npx sdlc-kit --antigravity
 
 # Cursor or OpenCode (skills + 9 slash commands)
@@ -96,9 +96,9 @@ npx skills add sumitroajiprabowo/sdlc-kit
 |---|---|
 | `--claude` | Install skills, 9 slash commands & 2 subagents into `~/.claude/` |
 | `--codex` | Install skills into `~/.agents/skills/` and the 9 commands as explicit-only skills in `~/.codex/skills/` |
-| `--antigravity` | Install skills into `~/.agents/skills/` |
+| `--antigravity` | Install skills into `~/.agents/skills/` and the 9 commands as explicit-only skills in `~/.gemini/config/skills/` |
 | `--cursor` | Install skills into `~/.cursor/skills/` and commands into `~/.cursor/commands/` |
-| `--opencode` | Install skills into `~/.config/opencode/skills/` and `~/.agents/skills/`, commands into `~/.config/opencode/command/` |
+| `--opencode` | Install skills into `~/.agents/skills/` and commands into `~/.config/opencode/commands/` |
 | `--local` | Install a compact prompt (`<800` tokens) to `~/.sdlc-kit/LOCAL_PROMPT.md` |
 | `--project` | Scaffold non-destructive project templates (`docs/`, PR template, `AGENTS.md`, `CLAUDE.md -> @AGENTS.md`, `.gitignore`) |
 | `--all` | Install across `claude`, `codex`, `antigravity`, `cursor`, `opencode`, and `local` |
@@ -127,9 +127,9 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 - **Claude Code**: Use `/sdlc-spec` (for big features), `/sdlc-start #123`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship` directly. Task state is saved in `.claude/HANDOFF.md` and `.claude/tasks/<slug>/`. With `--optimize`, press `Shift+Tab` twice for Plan Mode (Opus) and approve to execute on Sonnet (`opusplan`).
 - **Codex**: Run the 9 commands as skills: `$sdlc-start #123`, `$sdlc-spec`, `$sdlc-ship`, and so on (Codex removed custom prompts, so `/prompts:` no longer works). They load only when invoked. `$sdlc-workflow` and `$sdlc-orchestrator` are also available.
-- **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents.
+- **Antigravity**: Skills in `~/.agents/skills/` are discovered automatically; reference `sdlc-workflow` during `/plan` or `sdlc-orchestrator` for `/swarm` and subagents. The 9 commands (`/sdlc-start #123`, `/sdlc-spec`, ...) are explicit-only skills in `~/.gemini/config/skills/` and load only when invoked.
 - **Cursor**: Skills in `~/.cursor/skills/` are discovered automatically and the 9 commands are available from `~/.cursor/commands/`.
-- **OpenCode**: Skills in `~/.config/opencode/skills/` and `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/command/`.
+- **OpenCode**: Skills in `~/.agents/skills/` are discovered automatically; the 9 commands are in `~/.config/opencode/commands/`.
 - **Local LLMs**: Load `~/.sdlc-kit/LOCAL_PROMPT.md` as your system prompt or project instruction.
 
 ---
@@ -157,9 +157,9 @@ npx skills add sumitroajiprabowo/sdlc-kit
 |---|---|---|
 | `--claude` | `~/.claude/skills/` | `~/.claude/commands/` (+ subagents in `~/.claude/agents/`) |
 | `--codex` | `~/.agents/skills/` | `~/.codex/skills/sdlc-*/` (invoke as `$sdlc-start`) |
-| `--antigravity` | `~/.agents/skills/` | none |
+| `--antigravity` | `~/.agents/skills/` | `~/.gemini/config/skills/sdlc-*/` (invoke as `/sdlc-start`) |
 | `--cursor` | `~/.cursor/skills/` | `~/.cursor/commands/` |
-| `--opencode` | `~/.config/opencode/skills/`, `~/.agents/skills/` | `~/.config/opencode/command/` |
+| `--opencode` | `~/.agents/skills/` | `~/.config/opencode/commands/` |
 | `--local` | `~/.sdlc-kit/LOCAL_PROMPT.md` | none |
 
 Every installed file is recorded with a hash in `~/.sdlc-kit/manifest.json`. The installer skips files it didn't create, and `--uninstall` removes only files that are unchanged since install.
