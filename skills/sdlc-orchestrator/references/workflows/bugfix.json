@@ -1,0 +1,38 @@
+{
+  "name": "bugfix",
+  "steps": [
+    {
+      "id": "reproduce",
+      "type": "agent",
+      "role": "qa",
+      "needs": [],
+      "artifacts": ["reproduce-report.md"]
+    },
+    {
+      "id": "fix",
+      "type": "agent",
+      "role": "backend",
+      "needs": ["reproduce"],
+      "artifacts": ["backend-report.md"]
+    },
+    {
+      "id": "review",
+      "type": "agent",
+      "role": "reviewer",
+      "needs": ["fix"],
+      "on_fail": "fix"
+    },
+    {
+      "id": "test",
+      "type": "script",
+      "run": "npm test",
+      "needs": ["review"],
+      "on_fail": "fix"
+    },
+    {
+      "id": "gate-accept",
+      "type": "gate",
+      "needs": ["test"]
+    }
+  ]
+}

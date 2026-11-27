@@ -1,0 +1,71 @@
+{
+  "name": "feature",
+  "steps": [
+    {
+      "id": "clarify",
+      "type": "agent",
+      "role": "tech-lead",
+      "needs": [],
+      "artifacts": ["plan.md"]
+    },
+    {
+      "id": "design",
+      "type": "agent",
+      "role": "tech-lead",
+      "needs": ["clarify"],
+      "artifacts": ["contracts/api.md"]
+    },
+    {
+      "id": "gate-design",
+      "type": "gate",
+      "needs": ["design"]
+    },
+    {
+      "id": "backend",
+      "type": "agent",
+      "role": "backend",
+      "needs": ["gate-design"],
+      "artifacts": ["backend-report.md"]
+    },
+    {
+      "id": "frontend",
+      "type": "agent",
+      "role": "frontend",
+      "needs": ["gate-design"],
+      "artifacts": ["frontend-report.md"]
+    },
+    {
+      "id": "review",
+      "type": "agent",
+      "role": "reviewer",
+      "needs": ["backend", "frontend"],
+      "on_fail": "backend"
+    },
+    {
+      "id": "security",
+      "type": "agent",
+      "role": "security",
+      "needs": ["review"],
+      "on_fail": "backend"
+    },
+    {
+      "id": "test",
+      "type": "script",
+      "run": "npm test",
+      "needs": ["security"],
+      "on_fail": "backend"
+    },
+    {
+      "id": "qa",
+      "type": "agent",
+      "role": "qa",
+      "needs": ["test"],
+      "on_fail": "frontend"
+    },
+    {
+      "id": "gate-accept",
+      "type": "gate",
+      "needs": ["qa"]
+    }
+  ]
+}

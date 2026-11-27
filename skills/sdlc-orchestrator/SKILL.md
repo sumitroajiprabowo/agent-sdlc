@@ -42,3 +42,9 @@ Every worker must reply using this compact format:
 
 - If a worker fails the same verification **twice**, STOP retrying.
 - Return the exact error (<=15 lines) to the Planner/User rather than looping until the context window fills up.
+
+## 6. Multi-CLI Team
+
+- To run each SDLC role on its own CLI and model (e.g. `claude`, `codex`, `agy`, `opencode`) in isolated git worktrees, use `/sdlc-start-orchestration`.
+- Load `references/team-dispatch.md` for the role catalog, `~/.sdlc-kit/team.json` / `.sdlc/team.json` schema, headless invocations, and safety rules.
+- Load `references/team-protocol.md` and `references/workflows/` for the file-based message board, shared `contracts/`, workflow gates with send back, and `resume <slug>`.

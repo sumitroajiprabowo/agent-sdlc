@@ -40,7 +40,7 @@ test('detectTargets discovers existing agent dirs and falls back to antigravity'
   assert.deepEqual(detectTargets(claudeCodexHome), ['claude', 'codex']);
 });
 
-test('--claude installs 2 skills + 9 commands, and --no-orchestrator skips orchestrator', () => {
+test('--claude installs 2 skills + 10 commands, and --no-orchestrator skips orchestrator', () => {
   const home = makeTempDir('sdlc-kit-claude-');
   const res = runInstall({ targets: ['claude'], homeDir: home });
   assert.equal(res.warnings.length, 0);
@@ -503,7 +503,7 @@ test('--dry-run with existing manifest does not modify it', () => {
   assert.ok(fs.existsSync(path.join(home, '.claude/commands/sdlc-start.md')));
 });
 
-test('--cursor and --opencode also install and uninstall the 9 slash commands', () => {
+test('--cursor and --opencode also install and uninstall the 10 slash commands', () => {
   const home = makeTempDir('sdlc-kit-cmds-');
   runInstall({ targets: ['cursor', 'opencode'], homeDir: home });
   for (const cmd of COMMAND_FILES) {
@@ -543,7 +543,7 @@ test('--opencode upgrade moves 0.4.0 commands and skill copies, keeps edited fil
   assert.ok(fs.existsSync(path.join(home, '.config/opencode/commands/sdlc-start.md')));
 });
 
-test('--antigravity installs the 9 commands as explicit-only global skills', () => {
+test('--antigravity installs the 10 commands as explicit-only global skills', () => {
   const home = makeTempDir('sdlc-kit-ag-cmd-');
   runInstall({ targets: ['antigravity'], homeDir: home });
   for (const cmd of COMMAND_FILES) {
@@ -703,7 +703,7 @@ test('subagents have quoted frontmatter and stay under 30 lines', () => {
   }
 });
 
-test('--codex installs the 9 commands as explicit-only Codex skills', () => {
+test('--codex installs the 10 commands as explicit-only Codex skills', () => {
   const home = makeTempDir('sdlc-kit-codex-');
   runInstall({ targets: ['codex'], homeDir: home });
   for (const cmd of COMMAND_FILES) {
@@ -764,4 +764,72 @@ test('commands taking arguments ask instead of guessing when input is missing', 
   const start = read('sdlc-start.md');
   assert.ok(start.includes('not a git repository, stop'), 'sdlc-start must stop outside a git repo');
   assert.ok(start.includes('`sdlc-workflow` skill'), 'sdlc-start must point to the sdlc-workflow skill');
+});
+
+test('sdlc-start-orchestration command and team-dispatch reference are complete and safe', () => {
+  const cmd = fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'commands', 'sdlc-start-orchestration.md'), 'utf8');
+  assert.ok(cmd.split('\n').length <= 30, 'sdlc-start-orchestration.md must be <= 30 lines');
+  assert.ok(cmd.includes('~/.sdlc-kit/team.json'));
+  assert.ok(cmd.includes('.sdlc/team.json'));
+  assert.ok(cmd.includes('resume'));
+  assert.ok(cmd.includes('team-protocol.md'));
+
+  const refsDir = path.join(DEFAULT_PACKAGE_ROOT, 'skills', 'sdlc-orchestrator', 'references');
+  const ref = fs.readFileSync(path.join(refsDir, 'team-dispatch.md'), 'utf8');
+  for (const snippet of [
+    'claude -p',
+    'codex exec',
+    'agy --model',
+    'opencode run',
+    '--permission-mode plan',
+    '-s read-only',
+    '--mode plan',
+    '--agent plan',
+  ]) {
+    assert.ok(ref.includes(snippet), `team-dispatch.md missing "${snippet}"`);
+  }
+  assert.ok(/agy --model M --mode accept-edits -p "/.test(ref), 'team-dispatch.md must pass -p last with prompt for agy');
+
+  const protocol = fs.readFileSync(path.join(refsDir, 'team-protocol.md'), 'utf8');
+  assert.ok(protocol.split('\n').length <= 120, 'team-protocol.md must be <= 120 lines');
+  for (const snippet of ['board.md', 'contracts/', 'run.json', 'QUESTION', 'send back']) {
+    assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
+  }
+
+  interface WorkflowStep {
+    id: string;
+    type: string;
+    needs?: string[];
+    on_fail?: string;
+  }
+  interface WorkflowDef {
+    name: string;
+    steps: WorkflowStep[];
+  }
+  const allowedTypes = new Set(['agent', 'script', 'gate']);
+  const workflowTexts: Array<[string, string]> = [];
+  for (const wfFile of ['feature.json', 'bugfix.json']) {
+    const raw = fs.readFileSync(path.join(refsDir, 'workflows', wfFile), 'utf8');
+    workflowTexts.push([wfFile, raw]);
+    const wf = JSON.parse(raw) as WorkflowDef;
+    const ids = new Set(wf.steps.map((s) => s.id));
+    assert.ok(wf.steps.some((s) => s.type === 'gate'), `${wfFile} must include at least one gate step`);
+    for (const step of wf.steps) {
+      assert.ok(allowedTypes.has(step.type), `${wfFile} step "${step.id}" has invalid type "${step.type}"`);
+      for (const dep of step.needs ?? []) {
+        assert.ok(ids.has(dep), `${wfFile} step "${step.id}" references unknown needs "${dep}"`);
+      }
+      if (step.on_fail !== undefined) {
+        assert.ok(ids.has(step.on_fail), `${wfFile} step "${step.id}" references unknown on_fail "${step.on_fail}"`);
+      }
+    }
+  }
+
+  const forbiddenFlags = /dangerously|--yolo|bypassPermissions/;
+  assert.equal(forbiddenFlags.test(cmd), false, 'sdlc-start-orchestration.md must not include permission-bypass flags');
+  assert.equal(forbiddenFlags.test(ref), false, 'team-dispatch.md must not include permission-bypass flags');
+  assert.equal(forbiddenFlags.test(protocol), false, 'team-protocol.md must not include permission-bypass flags');
+  for (const [wfFile, raw] of workflowTexts) {
+    assert.equal(forbiddenFlags.test(raw), false, `${wfFile} must not include permission-bypass flags`);
+  }
 });

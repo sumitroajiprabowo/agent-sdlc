@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-27
+
+### Added
+- `/sdlc-start-orchestration` command to run a multi-CLI, multi-model SDLC team (`claude`, `codex`, `agy`, `opencode`) across isolated git worktrees with per-role configs in `~/.sdlc-kit/team.json` and `.sdlc/team.json`.
+- `references/team-dispatch.md` in the `sdlc-orchestrator` skill documenting the role catalog, config schema, write vs read-only headless invocations, worktree isolation recipe, and safety/cost rules.
+- `references/team-protocol.md` defining the file-based inter-role communication protocol (`board.md`, `contracts/`, `run.json`, message routing, and circuit breaker).
+- LOOP-like built-in workflows (`references/workflows/feature.json`, `bugfix.json`, plus `.sdlc/workflows/` project overrides) with agent/script/gate steps, send back, and `resume <slug>` support.
+- `## Multi-model team` section in `README.md` with an example roster and setup/usage commands.
+
 ## [0.4.2] - 2026-11-27
 
 ### Fixed

@@ -101,6 +101,7 @@ export const COMMAND_FILES = [
   'sdlc-qa.md',
   'sdlc-review.md',
   'sdlc-ship.md',
+  'sdlc-start-orchestration.md',
 ];
 export const AGENT_FILES = ['sdlc-reviewer.md', 'sdlc-tester.md'];
 

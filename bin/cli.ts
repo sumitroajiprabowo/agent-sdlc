@@ -11,9 +11,9 @@ Usage:
   npx github:sumitroajiprabowo/sdlc-kit [options]
 
 Targets (auto-detected if omitted):
-  --claude            Install skills, 9 slash commands & 2 subagents to ~/.claude/
-  --codex             Install skills to ~/.agents/skills/ and 9 \$sdlc-* skills to ~/.codex/skills/
-  --antigravity       Install skills to ~/.agents/skills/ and 9 /sdlc-* skills to ~/.gemini/config/skills/
+  --claude            Install skills, 10 slash commands & 2 subagents to ~/.claude/
+  --codex             Install skills to ~/.agents/skills/ and 10 \$sdlc-* skills to ~/.codex/skills/
+  --antigravity       Install skills to ~/.agents/skills/ and 10 /sdlc-* skills to ~/.gemini/config/skills/
   --cursor            Install skills & commands to ~/.cursor/
   --opencode          Install skills to ~/.agents/skills/ and commands to ~/.config/opencode/commands/
   --local             Install a compact prompt (<800 tokens) to ~/.sdlc-kit/LOCAL_PROMPT.md
