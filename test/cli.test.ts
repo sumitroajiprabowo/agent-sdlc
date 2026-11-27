@@ -55,6 +55,7 @@ test('--claude installs 2 skills + 10 commands, and --no-orchestrator skips orch
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/incident-response.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/developer-habits.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-orchestrator/SKILL.md')));
+  assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-orchestrator/references/team-debate.md')));
   for (const cmd of COMMAND_FILES) {
     assert.ok(fs.existsSync(path.join(home, '.claude/commands', cmd)));
   }
@@ -826,14 +827,35 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'Downstream owner',
     'Disputed finding',
     'Contract drift',
+    'OBJECTION',
+    'DISSENT',
+    'team-debate.md',
   ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }
+
+  const debatePath = path.join(refsDir, 'team-debate.md');
+  assert.ok(fs.existsSync(debatePath), 'team-debate.md must exist');
+  const debate = fs.readFileSync(debatePath, 'utf8');
+  assert.ok(debate.split('\n').length <= 60, 'team-debate.md must be <= 60 lines');
+  for (const snippet of [
+    'Design Review',
+    'panel',
+    'Max 2 rounds',
+    'DISSENT',
+    'strike',
+    'Allowed TYPE: QUESTION | ANSWER | HANDOFF | CONTRACT | BLOCKED | DECISION | OBJECTION | DISSENT',
+    'backward compatibility',
+  ]) {
+    assert.ok(debate.includes(snippet), `team-debate.md missing "${snippet}"`);
+  }
+  assert.equal(debate.includes('BLOCKER |'), false, 'team-debate.md must not include BLOCKER |');
 
   interface WorkflowStep {
     id: string;
     type: string;
     role?: string;
+    panel?: string[];
     needs?: string[];
     on_fail?: string;
   }
@@ -900,6 +922,14 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
   for (const dep of ['backend', 'frontend', 'mobile']) {
     assert.ok(featureById.get('integrate')?.needs?.includes(dep), `feature.json integrate must depend on ${dep}`);
   }
+  const designReview = featureById.get('design-review');
+  assert.ok(designReview, 'feature.json must have step design-review');
+  assert.equal(designReview.role, 'panel', 'feature.json design-review must have role "panel"');
+  for (const member of ['backend', 'frontend', 'mobile', 'qa']) {
+    assert.ok(designReview.panel?.includes(member), `feature.json design-review panel must include ${member}`);
+  }
+  assert.deepEqual(designReview.needs, ['design'], 'feature.json design-review needs must be ["design"]');
+  assert.ok(featureById.get('gate-design')?.needs?.includes('design-review'), 'feature.json gate-design must depend on design-review');
   const bugfix = workflows.get('bugfix.json')!;
   const bugfixById = new Map(bugfix.steps.map((s) => [s.id, s]));
   assert.equal(bugfixById.get('fix')?.role, 'owner', 'bugfix.json fix step must have role "owner"');
