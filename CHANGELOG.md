@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-28
+
+### Added
+- Live Threads in `team-debate.md`: one persistent session per role per run (`run.json` `sessions`), immediate verbatim peer `QUESTION`/`OBJECTION` relay (max 2 rounds), mode preservation (`answer only, do not edit` for write roles), and fresh-session fallback.
+- Per-CLI resume templates in `team-dispatch.md` for `agy` (`--conversation`), `codex` (`codex exec resume`), and `opencode` (`--session`).
+- `sessions` map in the `run.json` schema in `team-protocol.md`.
+
+### Notes
+- Resume ids are captured from each CLI's first-run output (`opencode` rejects custom ids; `codex` resume takes the sandbox via `-c sandbox_mode`).
+
 ## [0.7.1] - 2026-11-27
 
 ### Fixed

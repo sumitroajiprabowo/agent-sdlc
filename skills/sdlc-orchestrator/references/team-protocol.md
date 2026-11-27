@@ -20,6 +20,7 @@ Roles communicate through files in a per-task workspace. The lead session acts a
   "steps": {
     "<id>": { "status": "pending|running|done|failed|waiting-gate|skipped", "attempts": 0 }
   },
+  "sessions": { "backend": { "cli": "agy", "id": "..." } },
   "sendbacks": [
     { "from": "review", "to": "backend", "reason": "..." }
   ]
