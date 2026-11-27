@@ -18,7 +18,7 @@ Roles communicate through files in a per-task workspace. The lead session acts a
 {
   "workflow": "feature",
   "steps": {
-    "<id>": { "status": "pending|running|done|failed|waiting-gate", "attempts": 0 }
+    "<id>": { "status": "pending|running|done|failed|waiting-gate|skipped", "attempts": 0 }
   },
   "sendbacks": [
     { "from": "review", "to": "backend", "reason": "..." }
@@ -56,12 +56,12 @@ Each step in `steps` has:
 
 - `id`: unique step identifier
 - `type`: `agent`, `script`, or `gate`
-- `role` (for `agent`) or `run` (for `script`)
-- `needs`: array of step IDs that must be `done` before this step starts
+- `role` (for `agent`; may be the reserved value `owner`, resolved from failing paths in the previous step's report via Owner Routing) or `run` (for `script`)
+- `needs`: array of step IDs that must be `done` (or `skipped`) before this step starts
 - `artifacts` (optional): array of workspace paths produced by the step
 - `on_fail` (optional): step ID or the reserved value `owner` to send back to on failure
 
-A step starts when all of its `needs` are `done`. Steps with no dependency between them run in parallel. Note that `checks.run` in built-in workflows is a placeholder for the project's own lint/typecheck/test command.
+A step starts when all of its `needs` are `done` or `skipped`. A step whose role is disabled or missing from the roster is marked `skipped`, and `skipped` satisfies `needs` like `done`. Steps with no dependency between them run in parallel. `checks.run` in built-in workflows is a placeholder for the project's lint/typecheck/test command.
 
 ## Gates
 
@@ -84,7 +84,11 @@ Running `resume <slug>` reads `.claude/tasks/<slug>/run.json` and continues from
 
 ## Owner Routing
 
-- For `on_fail: owner`, the lead maps failing file paths (from the report or check output) to the role whose team-config `paths` contain them, resetting that role's step and its dependents to `pending`. When paths overlap, the longest matching prefix wins; on a tie, or if paths are ambiguous or unowned, ask the user.
+- For `on_fail: owner` (or `role: owner`), the lead maps failing file paths (from the report or check output) to the role whose team-config `paths` contain them, resetting that role's step and its dependents to `pending`. When paths overlap, the longest matching prefix wins; on a tie, or if paths are ambiguous or unowned, ask the user.
+- **Multi-owner send-back**: when failing paths map to several roles (e.g. `frontend` and `mobile`), reset each owner step in parallel, then reset dependents (`integrate` → `checks` → `review`/`security` → `qa`) to `pending`, and append one `sendbacks` entry per owner (`{ "from": "qa", "to": "mobile", "reason": "..." }`). Post the failing step's findings to each owner as a `HANDOFF` on `board.md`.
+- **Downstream owner**: when the owner's step is not upstream of the failing step (e.g. `qa` owns a test that fails in `checks`), the lead dispatches that role out-of-band in its own worktree with the failure log, merges its branch, then reruns the failing step; record the `sendbacks` entry as usual and do not reset steps that have not run yet.
+- **Disputed finding**: re-reviews after a send-back inline the full changed files, not only the diff. If the lead believes a finding is wrong, it posts an `ANSWER` with evidence (`path:line`, covering test) to the finding's author, who re-decides; the lead never silently overrides a `FAIL`, and an unresolved dispute goes to the next gate.
+- **Contract drift**: a consumer (`frontend`, `mobile`) that deviates from `contracts/api.md` owns its FAIL; if the contract itself is wrong, route to `tech-lead` with a `CONTRACT` message, bump the contract version, and reset all affected roles.
 
 ## Step Order Rationale
 
@@ -104,7 +108,7 @@ Running `resume <slug>` reads `.claude/tasks/<slug>/run.json` and continues from
 
 ## Contract Check
 
-- `qa` verifies the implementation against `contracts/api.md` (routes, status codes, request/response schema); any drift is a `FAIL` owned by the contract producer.
+- `qa` verifies the implementation against `contracts/api.md` (routes, status codes, request/response schema); any drift is a `FAIL` owned by whichever side deviates from the contract.
 
 ## Spec and ADR
 

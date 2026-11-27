@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-27
+
+### Added
+- Built-in `mobile` role in `team-dispatch.md`, `/sdlc-start-orchestration` setup, and the `feature` workflow (`integrate` now depends on `backend`, `frontend`, and `mobile`).
+- Owner-resolved `fix` role (`"role": "owner"`, `fix-report.md`) in the `bugfix` workflow so fixes route automatically to the role owning the failing paths.
+
+### Changed
+- Added multi-owner send-back in `team-protocol.md` to reset all owning roles in parallel, reset downstream steps, append one `sendbacks` entry per owner, and post findings as `HANDOFF` messages.
+- Clarified contract drift ownership in `team-protocol.md` (deviating consumers own their `FAIL`; wrong contracts route to `tech-lead` via `CONTRACT` and reset affected roles).
+- Added `skipped` step status for disabled or missing roles (satisfies `needs` like `done`).
+- Updated model examples in `team-dispatch.md` and `README.md` (`gpt-astra` → `gpt-6.2-sol`).
+- Clarified **Edit-only workers** in `team-dispatch.md` to allow read-only inspection commands (`cat`, `sed -n`, `rg`, `ls`, `git diff`) while reserving build, test, install, and network commands for the lead.
+- Added **Downstream owner** handling in `team-protocol.md` so failures owned by a role downstream of the failing step (e.g. `qa` owning a test failing in `checks`) are dispatched out-of-band in a worktree, merged, and rerun without resetting steps that have not run yet.
+- Clarified **Edit-only workers** in `team-dispatch.md` for headless CLIs that deny shell commands (e.g. `agy` `accept-edits`): briefs must instruct "file read/edit tools only, no shell", while read-only inspection commands apply to CLIs that read through their shell (e.g. `codex`).
+- Extended **Model probe** in `team-dispatch.md` to handle mid-run quota or usage-limit errors by probing a fallback model, posting a `DECISION` on `board.md`, updating the roster, and rerunning the step (counting the failed attempt toward the circuit breaker).
+- Added **Disputed finding** handling in `team-protocol.md`: re-reviews after a send-back inline the full changed files (not only the diff), and if the lead disputes a finding it posts an `ANSWER` with evidence (`path:line`, covering test) for the author to re-decide rather than silently overriding a `FAIL` (unresolved disputes go to the next gate).
+- Extended **Edit-only workers** in `team-dispatch.md` to cover `agy` in all headless modes (`accept-edits` and `plan`), instructing read-only roles on CLIs that deny file/shell tools to "do not call any tool; answer from the inlined text".
+
 ## [0.5.2] - 2026-11-27
 
 ### Fixed

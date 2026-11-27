@@ -9,12 +9,13 @@ Dispatch each SDLC role as a separate, fresh-context headless CLI process so eve
 | `tech-lead` | Orchestrator; plan, split, ADR, integrate, final diff review | Lead branch / integration | Strongest |
 | `backend` | API, domain logic, DB, unit/integration tests | Owned paths | Fast / cost |
 | `frontend` | UI, 5 UI states, accessibility | Owned paths | Fast / cost |
+| `mobile` | Mobile app (iOS/Android/cross-platform), consumes `contracts/api.md`, 5 UI states | Owned paths | Fast / cost |
 | `qa` | SDET, test pyramid, new tests | Test files only | Fast |
 | `security` | AppSec, OWASP + `ai-security-checklist.md` from `sdlc-workflow`, secrets, deps | Read-only | Strong |
 | `devops` | CI/CD, IaC, observability, `release-plan` (flag, migration, observability, rollback) | Infra paths | Fast |
 | `reviewer` | Independent diff review | Read-only | Strong |
 
-Custom roles (e.g. `mobile`, `data`) can be added with the same schema, and any role can be disabled (`"enabled": false`).
+Custom roles (e.g. `data`, `ml`) can be added with the same schema; disabled (`"enabled": false`) or missing roles are `skipped`.
 
 ## Team Config Schema
 
@@ -26,7 +27,8 @@ Loaded from global `~/.sdlc-kit/team.json`, with project `.sdlc/team.json` overr
   "roles": {
     "tech-lead": { "cli": "claude", "model": "claude-opus-5-5", "enabled": true, "paths": [] },
     "backend": { "cli": "agy", "model": "gemini-4-neon-medium", "enabled": true, "paths": ["src/api/", "src/domain/"] },
-    "frontend": { "cli": "codex", "model": "gpt-astra", "enabled": true, "paths": ["src/web/"] },
+    "frontend": { "cli": "codex", "model": "gpt-6.2-sol", "enabled": true, "paths": ["src/web/"] },
+    "mobile": { "cli": "agy", "model": "gemini-4-neon-medium", "enabled": false, "paths": ["mobile/"] },
     "qa": { "cli": "opencode", "model": "opencode/deepseek-v4.1-flash-free", "enabled": true, "paths": ["tests/"] },
     "security": { "cli": "claude", "model": "claude-opus-5-5", "enabled": true, "paths": [] },
     "reviewer": { "cli": "claude", "model": "claude-opus-5-5", "enabled": true, "paths": [] }
@@ -56,10 +58,10 @@ TASKS="$PWD/.claude/tasks/<slug>"
 ## Worker Sandbox Rules
 
 - **Inline context**: inline the relevant `contracts/` files and the scoped board lines into `<role>-brief.md`. Some headless CLIs deny reads outside the worktree, so never rely on paths into the main checkout.
-- **Edit-only workers**: write roles edit files only. The lead runs lint/typecheck/test in the worktree after the worker returns. Headless CLIs may deny shell commands, and some sandboxes block network `listen`.
+- **Edit-only workers**: write roles edit files and may run read-only inspection commands (`cat`, `sed -n`, `rg`, `ls`, `git diff`); only build/test/install/network commands are reserved for the lead, which runs lint/typecheck/test in the worktree after the worker returns. For CLIs whose headless modes deny shell or file tools (e.g. agy `accept-edits` and `plan`), write-role briefs must say "file read/edit tools only, no shell", and read-only roles on such CLIs get "do not call any tool; answer from the inlined text"; read-only inspection commands apply to CLIs that read through their shell (e.g. codex). Headless CLIs may deny shell commands, and some sandboxes block network `listen`.
 - **Empty means FAIL**: treat an exit code 0 with no `Status:` line, or a "no output produced" / permission-denied message, as `FAIL` (it counts toward the circuit breaker).
 - **Report extraction**: keep only the final report block, from the last `Status:` line to the end, in `<role>-report.md`.
-- **Model probe**: before saving a role, probe its CLI+model with a one-line read-only call (e.g. reply `PONG`). On error, ask the user for another model. Account plans may not support every model.
+- **Model probe**: before saving a role, probe its CLI+model with a one-line read-only call (e.g. reply `PONG`). On error, ask the user for another model. Account plans may not support every model. On a quota or usage-limit error mid-run, probe a fallback model, post a `DECISION` on the board, update the roster, and rerun the step (the failed attempt still counts toward the circuit breaker).
 
 ## Worktree Isolation Recipe
 
