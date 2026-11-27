@@ -39,7 +39,7 @@ After each worker finishes, the lead appends every message line to `board.md` us
 
 ## Routing Rules
 
-- **QUESTION**: The lead answers from context if possible. Otherwise it dispatches the target role read-only with only the question plus the relevant contracts, then posts the `ANSWER` to `board.md`.
+- **QUESTION**: The lead answers only process questions; questions about another role's owned area go to that role (see `team-debate.md` Peer Messages), dispatched read-only with only the question plus the relevant contracts, and its `ANSWER` is posted to `board.md`.
 - **CONTRACT / HANDOFF**: Unblocks dependent steps once the referenced artifact or work is in place.
 - **BLOCKED**: Pause the run and ask the user how to proceed.
 - **DECISION**: Record it on `board.md` (suggest `/sdlc-adr` if the decision is architectural).
@@ -66,7 +66,7 @@ A step starts when all of its `needs` are `done` or `skipped`. A step whose role
 
 ## Gates
 
-When a `gate` step is reached, set its status to `waiting-gate`, present the produced artifacts, any open `DISSENT` lines, and a concise summary of `board.md`, then offer three options:
+When a `gate` step is reached, set its status to `waiting-gate`, present the produced artifacts, any open `DISSENT` lines, and a concise summary of `board.md`, then offer three options (only the user approves a gate; see `team-debate.md` Lead Limits):
 
 1. **Approve**: mark the gate `done` and continue.
 2. **Add context and rerun**: append the user's context to `board.md` and rerun a specified step.

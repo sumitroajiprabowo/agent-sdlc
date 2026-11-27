@@ -830,6 +830,7 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'OBJECTION',
     'DISSENT',
     'team-debate.md',
+    'only the user approves',
   ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }
@@ -846,6 +847,12 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'strike',
     'Allowed TYPE: QUESTION | ANSWER | HANDOFF | CONTRACT | BLOCKED | DECISION | OBJECTION | DISSENT',
     'backward compatibility',
+    'Peer Messages',
+    'verbatim',
+    'Lead Limits',
+    'never approves a gate',
+    'may not skip',
+    'Status: <VALUE>',
   ]) {
     assert.ok(debate.includes(snippet), `team-debate.md missing "${snippet}"`);
   }
