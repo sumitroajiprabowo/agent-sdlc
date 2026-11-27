@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-27
+
+### Fixed
+- Added `Peer Messages` in `team-debate.md` and narrowed `QUESTION` routing in `team-protocol.md` so workers address owning roles directly, the lead relays peer lines verbatim (never paraphrasing) and answers only process questions, and workers may read `board.md` directly (read-only).
+- Added `Lead Limits` in `team-debate.md` and clarified `Gates` in `team-protocol.md` so only the user approves a gate (non-interactive or unattended runs stop at `waiting-gate`) and every solo lead decision is recorded as `DECISION` with reason.
+- Required every downstream verification step (`checks`, `review`, `security`, `qa`) to rerun by dispatching its role after any code-changing send-back; the lead may not skip a step or substitute its own judgment or a passing test suite for a role's verdict.
+- Enforced in `team-debate.md` that `CONTRACT` messages from any role other than `tech-lead` must be addressed to `tech-lead` or incur a strike and re-routing.
+- Enforced in `team-debate.md` that any worker report whose status line is not exactly `Status: <VALUE>` at line start incurs a strike rather than being silently normalized.
+
 ## [0.7.0] - 2026-11-27
 
 ### Added
