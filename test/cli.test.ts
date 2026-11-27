@@ -50,6 +50,7 @@ test('--claude installs 2 skills + 9 commands, and --no-orchestrator skips orche
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/clean-code.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/quality-gates.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/security-checklist.md')));
+  assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/ai-security-checklist.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/database-hygiene.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/incident-response.md')));
   assert.ok(fs.existsSync(path.join(home, '.claude/skills/sdlc-workflow/references/developer-habits.md')));
@@ -103,6 +104,7 @@ test('--codex, --antigravity, and --local install to expected paths', () => {
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/clean-code.md')));
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/quality-gates.md')));
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/security-checklist.md')));
+  assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/ai-security-checklist.md')));
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/database-hygiene.md')));
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/incident-response.md')));
   assert.ok(fs.existsSync(path.join(homeAg, '.agents/skills/sdlc-workflow/references/developer-habits.md')));
