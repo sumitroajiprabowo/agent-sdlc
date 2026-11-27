@@ -16,9 +16,17 @@
       "artifacts": ["contracts/api.md"]
     },
     {
+      "id": "design-review",
+      "type": "agent",
+      "role": "panel",
+      "panel": ["backend", "frontend", "mobile", "qa"],
+      "needs": ["design"],
+      "artifacts": ["design-review.md"]
+    },
+    {
       "id": "gate-design",
       "type": "gate",
-      "needs": ["design"]
+      "needs": ["design-review"]
     },
     {
       "id": "backend",

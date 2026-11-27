@@ -157,6 +157,7 @@ Roles communicate only through the lead via `.claude/tasks/<slug>/board.md` and 
 Built-in workflows (`feature`, `bugfix`) run agent, script, and human `gate` steps in dependency order, pausing at gates to approve, rerun with context, or send back to an earlier step.
 Run state is saved in `run.json`, so an interrupted run can continue with `/sdlc-start-orchestration resume <slug>`.
 Override or add project workflows in `.sdlc/workflows/<name>.json` and run them with `workflow=<name>`.
+Before `gate-design`, a parallel `design-review` panel critiques `contracts/api.md` using bounded debate threads, a strict message enum, and non-blocking `DISSENT` surfaced at gates (see [team-debate.md](skills/sdlc-orchestrator/references/team-debate.md)).
 See [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) for the board format, routing rules, and workflow schema.
 
 ---

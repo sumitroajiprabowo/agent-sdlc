@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-27
+
+### Added
+- `design-review` panel step in `team-debate.md` and `feature.json` where `backend`, `frontend`, `mobile`, and `qa` critique `plan.md` and `contracts/api.md` in parallel before `gate-design`.
+- Bounded debate threads (`#<n>`, max 2 rounds) with `tech-lead` arbitration and evidence-backed closure.
+- Non-blocking `DISSENT` messages surfaced at every gate for user ruling.
+- Strict `Message Enum` block pasted into every worker brief with strike tracking and invalid-report reruns.
+- Design-review panelists must check backward compatibility of existing consumer surfaces they own (HTTP responses and client-library method signatures/return shapes) and state that check in their reply.
+
+### Changed
+- `feature` workflow `gate-design` now depends on `design-review`.
+- `board.md` `TYPE` enum in `team-protocol.md` gains `OBJECTION` and `DISSENT`.
+
 ## [0.6.0] - 2026-11-27
 
 ### Added

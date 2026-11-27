@@ -6,7 +6,7 @@ Roles communicate through files in a per-task workspace. The lead session acts a
 
 | Path | Purpose |
 |---|---|
-| `board.md` | Append-only message board. Line format: `[<step>] <from> → <to\|all>: <TYPE> <text>`. `TYPE` is one of `QUESTION`, `ANSWER`, `HANDOFF`, `CONTRACT`, `BLOCKED`, `DECISION`. |
+| `board.md` | Append-only message board. Line format: `[<step>] <from> → <to\|all>: <TYPE> <text>`. `TYPE` is one of `QUESTION`, `ANSWER`, `HANDOFF`, `CONTRACT`, `BLOCKED`, `DECISION`, `OBJECTION`, `DISSENT`. |
 | `contracts/` | Shared artifacts such as `api.md`, `events.md`, `schema.md`. Producers write them (e.g. design/backend publishes the API contract); consumers read them (e.g. frontend). |
 | `<role>-brief.md` | Input brief for a role step. |
 | `<role>-report.md` | Output report from a role step. |
@@ -47,6 +47,7 @@ After each worker finishes, the lead appends every message line to `board.md` us
 - **Normalize messages**:
   - `to` must be exactly one known role or `all`. Map aliases such as `lead` to `tech-lead`, and split multi-recipient lines.
   - `TYPE` must be in the enum; otherwise map it to the closest type (e.g. a status update becomes `HANDOFF`) and note the normalization.
+- **OBJECTION / DISSENT / threads**: see `team-debate.md` (design review, thread rounds, dissent at gates, strict enum).
 
 ## Workflows
 
@@ -65,7 +66,7 @@ A step starts when all of its `needs` are `done` or `skipped`. A step whose role
 
 ## Gates
 
-When a `gate` step is reached, set its status to `waiting-gate`, present the produced artifacts plus a concise summary of `board.md`, and offer three options:
+When a `gate` step is reached, set its status to `waiting-gate`, present the produced artifacts, any open `DISSENT` lines, and a concise summary of `board.md`, then offer three options:
 
 1. **Approve**: mark the gate `done` and continue.
 2. **Add context and rerun**: append the user's context to `board.md` and rerun a specified step.
