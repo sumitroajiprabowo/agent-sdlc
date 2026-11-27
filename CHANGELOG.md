@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-27
+
+### Fixed
+- `/sdlc-start`, `/sdlc-spec`, and `/sdlc-adr` run without an argument now ask for the task, feature, or decision and stop, instead of working on an empty placeholder.
+- `/sdlc-start` stops and asks for the project path when it is not run inside a git repository, instead of scanning the home directory.
+- `/sdlc-start` now points to the `sdlc-workflow` skill references for architecture, security, and DB tasks.
+
 ## [0.4.1] - 2026-11-27
 
 ### Fixed
