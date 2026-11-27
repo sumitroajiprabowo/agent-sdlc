@@ -755,3 +755,13 @@ test('review and qa commands loop back to Stage: IMPLEMENT on failure', () => {
     assert.ok(c.includes('Stage: IMPLEMENT'), `${f} must set Stage: IMPLEMENT on failure`);
   }
 });
+
+test('commands taking arguments ask instead of guessing when input is missing', () => {
+  const read = (f: string) => fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'commands', f), 'utf8');
+  for (const f of ['sdlc-start.md', 'sdlc-spec.md', 'sdlc-adr.md']) {
+    assert.match(read(f), /If no (task|feature|decision) was given, ask .* and stop\./, `${f} must guard empty input`);
+  }
+  const start = read('sdlc-start.md');
+  assert.ok(start.includes('not a git repository, stop'), 'sdlc-start must stop outside a git repo');
+  assert.ok(start.includes('`sdlc-workflow` skill'), 'sdlc-start must point to the sdlc-workflow skill');
+});
