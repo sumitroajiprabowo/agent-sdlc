@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-27
+
 ### Fixed
 - `--antigravity` installed no commands. It now installs the 9 commands as explicit-only skills (`disable-model-invocation: true`) in `~/.gemini/config/skills/`, run as `/sdlc-start`, `/sdlc-spec`, ...
 - `--opencode` now installs commands into `~/.config/opencode/commands/` (the documented directory) instead of the legacy `command/`, and moves unedited files installed there by older releases.
