@@ -16,23 +16,23 @@
       "artifacts": ["backend-report.md"]
     },
     {
-      "id": "review",
-      "type": "agent",
-      "role": "reviewer",
+      "id": "checks",
+      "type": "script",
+      "run": "npm run lint && npm run typecheck && npm test",
       "needs": ["fix"],
       "on_fail": "fix"
     },
     {
-      "id": "test",
-      "type": "script",
-      "run": "npm test",
-      "needs": ["review"],
+      "id": "review",
+      "type": "agent",
+      "role": "reviewer",
+      "needs": ["checks"],
       "on_fail": "fix"
     },
     {
       "id": "gate-accept",
       "type": "gate",
-      "needs": ["test"]
+      "needs": ["review"]
     }
   ]
 }
