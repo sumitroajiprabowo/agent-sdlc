@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-27
+
 ### Added
 - `ai-security-checklist.md` reference in the `sdlc-workflow` skill covering OWASP LLM & Agentic Top 10, prompt injection, guardrails, agent tool policy, red teaming, model supply chain, and LLM monitoring; `/sdlc-spec` and `/sdlc-review` point to it for LLM/agent features.
 - SBOM (Syft / CycloneDX) and TruffleHog in the quality gates.
