@@ -93,6 +93,7 @@ license: MIT
 - [clean-code.md](references/clean-code.md) — Karpathy coding discipline, layer boundaries, error handling, simplicity
 - [quality-gates.md](references/quality-gates.md) — Auto-detect format, lint, vulncheck, secret scan, API & load/stress QA
 - [security-checklist.md](references/security-checklist.md) — Multi-tenant isolation, session hygiene, OWASP, PII masking, audit logs
+- [ai-security-checklist.md](references/ai-security-checklist.md) — LLM/agent threats: prompt injection, guardrails, tool policy, red teaming, model supply chain
 - [database-hygiene.md](references/database-hygiene.md) — Query plans, lock-safe migrations, pooling, short transactions, backups
 - [incident-response.md](references/incident-response.md) — SEV1–SEV4 tiers, 5-minute mitigation rule, comms, post-mortems
 - [developer-habits.md](references/developer-habits.md) — Observability, blameless post-mortems, code deletion, tech debt budget, DoD

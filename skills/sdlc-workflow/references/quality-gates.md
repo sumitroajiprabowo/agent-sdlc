@@ -17,7 +17,10 @@ Consult this reference during `/sdlc-qa`, `/sdlc-review`, and `/sdlc-ship`.
 | **Rust** (`Cargo.toml`) | `cargo fmt --check` | `cargo clippy -- -D warnings` | `cargo audit` |
 | **Java / Kotlin** (`pom.xml` / `build.gradle*`) | `spotlessCheck` | `checkstyle` / `ktlint` / `spotbugs` | `trivy fs .` / OWASP dep-check |
 | **PHP** (`composer.json`) | `pint --test` / `php-cs-fixer` | `phpstan` / `psalm` | `composer audit` |
-| **Infra / Universal** (`Dockerfile`, `*.sh`, `*.tf`) | `terraform fmt -check` | `hadolint`, `shellcheck` | `gitleaks detect`, `trivy fs .` |
+| **Infra / Universal** (`Dockerfile`, `*.sh`, `*.tf`) | `terraform fmt -check` | `hadolint`, `shellcheck` | `gitleaks detect` / `trufflehog git file://. --only-verified`, `trivy fs .` |
+
+- **SBOM** on release or container builds: `syft . -o cyclonedx-json > sbom.cdx.json` or `trivy fs --format cyclonedx .`.
+- **AI / LLM stack** (`openai`, `anthropic`, `langchain`, `transformers`, `llama-index` in manifests): also apply `references/ai-security-checklist.md`.
 
 ## 3. API QA Checklist (Every API Change)
 - **Validation & Negative Cases**: invalid payloads, boundary values, missing required fields return clean `400`/`422`.

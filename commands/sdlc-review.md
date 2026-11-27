@@ -7,7 +7,7 @@ Review ONLY the current branch changes (do not scan unrelated files):
 1. Run `git status -sb && git diff --stat` and inspect `git diff` (if changes are already committed, detect the default branch via `git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/@@' || echo origin/main` and inspect `git diff <base>...HEAD`).
 2. Check strictly for high-signal issues:
    - **Correctness & Clean Code**: null/empty handling, off-by-one, error swallowing, concurrency/race conditions, missing idempotency/timeouts on critical mutations, surgical diffs & clean layer boundaries (`references/clean-code.md` in the `sdlc-workflow` skill)
-   - **Security**: injection, auth/tenant bypass, exposed secrets, unsafe input handling (`references/security-checklist.md` in the `sdlc-workflow` skill)
+   - **Security**: injection, auth/tenant bypass, exposed secrets, unsafe input handling (`references/security-checklist.md` in the `sdlc-workflow` skill; for LLM/agent features also `references/ai-security-checklist.md`)
    - **Quality Gates**: confirm Formatter, Lint & Typecheck, Vulnerability Audit, and Secret Scan pass (`references/quality-gates.md` in the `sdlc-workflow` skill)
    - **Regressions & Contracts**: breaking API/DB changes, backward-incompatible or table-locking migrations, N+1 queries (`references/database-hygiene.md` in the `sdlc-workflow` skill)
    - **Frontend (if UI touched)**: missing Loading, Empty, Error, or Responsive/A11y states

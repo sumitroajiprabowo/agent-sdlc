@@ -136,12 +136,13 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 ## Included Playbooks & Docs
 
-- **[sdlc-workflow](skills/sdlc-workflow/SKILL.md)** — 0 → Production SDLC playbook with 8 on-demand references:
+- **[sdlc-workflow](skills/sdlc-workflow/SKILL.md)** — 0 → Production SDLC playbook with 9 on-demand references:
   - [architecture-checklist.md](skills/sdlc-workflow/references/architecture-checklist.md) — Idempotency, failure design, backward compatibility, data integrity
   - [monolith-and-microservices.md](skills/sdlc-workflow/references/monolith-and-microservices.md) — Modular monolith boundaries, service extraction, outbox, tracing, sagas
   - [clean-code.md](skills/sdlc-workflow/references/clean-code.md) — Coding discipline, layer boundaries, error handling, simplicity
   - [quality-gates.md](skills/sdlc-workflow/references/quality-gates.md) — Auto-detect format, lint, vulncheck, secret scan, API QA & load/stress testing
   - [security-checklist.md](skills/sdlc-workflow/references/security-checklist.md) — Multi-tenant isolation, session hygiene, OWASP, PII masking, audit logs
+  - [ai-security-checklist.md](skills/sdlc-workflow/references/ai-security-checklist.md) — LLM/agent security: OWASP LLM & Agentic Top 10, prompt injection, guardrails, red teaming, model supply chain
   - [database-hygiene.md](skills/sdlc-workflow/references/database-hygiene.md) — Query plans, lock-safe migrations, pooling, short transactions, backups
   - [incident-response.md](skills/sdlc-workflow/references/incident-response.md) — SEV1–SEV4 tiers, 5-minute mitigation rule, comms, post-mortems
   - [developer-habits.md](skills/sdlc-workflow/references/developer-habits.md) — Observability, blameless post-mortems, code deletion, tech debt budget, DoD
