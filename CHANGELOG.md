@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-11-28
+
+### Changed
+- **README demo animation**: adds a multi-model orchestration run (roster, design-review debate with `DISSENT`, `check-run`, `gate-design`, `gate-accept`) and fixes the slash command count (10).
+- **README overview**: mentions `/sdlc-start-orchestration` in Why and Daily Developer Workflow.
+- **README Why**: corrected `sdlc-workflow` reference count to 9.
+
 ## [0.9.2] - 2026-11-28
 
 ### Changed
