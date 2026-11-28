@@ -18,7 +18,7 @@ Roles communicate through files in a per-task workspace. The lead session acts a
 {
   "workflow": "feature",
   "steps": {
-    "<id>": { "status": "pending|running|done|failed|waiting-gate|skipped", "attempts": 0 }
+    "<id>": { "status": "pending|running|done|failed|waiting-gate|skipped", "attempts": 0, "approvedBy": "user (gates only)" }
   },
   "sessions": { "backend": { "cli": "agy", "id": "..." } },
   "sendbacks": [
@@ -67,7 +67,7 @@ A step starts when all of its `needs` are `done` or `skipped`. A step whose role
 
 ## Gates
 
-When a `gate` step is reached, set its status to `waiting-gate`, present the produced artifacts, any open `DISSENT` lines, and a concise summary of `board.md`, then offer three options (only the user approves a gate; see `team-debate.md` Lead Limits):
+When a `gate` step is reached, set its status to `waiting-gate`, present the produced artifacts, any open `DISSENT` lines, and a concise summary of `board.md`, then offer three options (only the user approves a gate; see `team-debate.md` Lead Limits; before presenting a gate the lead runs `npx sdlc-kit --check-run .claude/tasks/<slug>` and fixes every error first):
 
 1. **Approve**: mark the gate `done` and continue.
 2. **Add context and rerun**: append the user's context to `board.md` and rerun a specified step.

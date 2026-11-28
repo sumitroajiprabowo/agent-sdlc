@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
+import { checkRun } from '../lib/check-run.js';
 import {
   AGENT_FILES,
   COMMAND_FILES,
@@ -192,6 +193,7 @@ test('CLI subprocess smoke tests (--help, --version, invalid flag)', () => {
   const helpOut = execFileSync(process.execPath, [cliPath, '--help'], { encoding: 'utf8' });
   assert.ok(helpOut.includes('npx sdlc-kit'));
   assert.ok(helpOut.includes('--claude'));
+  assert.ok(helpOut.includes('--check-run'));
 
   const verOut = execFileSync(process.execPath, [cliPath, '--version'], { encoding: 'utf8' }).trim();
   assert.equal(verOut, JSON.parse(fs.readFileSync(path.join(DEFAULT_PACKAGE_ROOT, 'package.json'), 'utf8')).version);
@@ -960,4 +962,136 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
   for (const [wfFile, raw] of workflowTexts) {
     assert.equal(forbiddenFlags.test(raw), false, `${wfFile} must not include permission-bypass flags`);
   }
+});
+
+test('checkRun validates run.json, gates, needs, and board lines', () => {
+  const proj = makeTempDir('sdlc-kit-check-run-');
+  fs.mkdirSync(path.join(proj, '.sdlc'), { recursive: true });
+  fs.writeFileSync(
+    path.join(proj, '.sdlc', 'team.json'),
+    JSON.stringify({ roles: { 'tech-lead': {}, backend: {} } }),
+  );
+  const taskDir = path.join(proj, '.claude', 'tasks', 't');
+  fs.mkdirSync(taskDir, { recursive: true });
+
+  const writeRun = (data: Record<string, unknown>): void => {
+    fs.writeFileSync(path.join(taskDir, 'run.json'), JSON.stringify(data, null, 2));
+  };
+  const writeBoard = (text: string): void => {
+    fs.writeFileSync(path.join(taskDir, 'board.md'), text);
+  };
+
+  const validRun = (): Record<string, unknown> => ({
+    slug: 't',
+    workflow: 'feature',
+    sessions: { 'tech-lead': { cli: 'claude', id: 'sess-1' } },
+    steps: {
+      clarify: { status: 'done', attempts: 1 },
+      design: { status: 'done', attempts: 1 },
+      'design-review': { status: 'done', attempts: 1 },
+      'gate-design': { status: 'done', attempts: 1, approvedBy: 'user' },
+    },
+    sendbacks: [{ from: 'design-review', to: 'tech-lead', reason: 'clarify schema' }],
+  });
+
+  writeRun(validRun());
+  writeBoard(
+    '# Task board\n\n[design] tech-lead → all: CONTRACT v1\n[live-thread] backend → tech-lead: ANSWER #1 ok\n',
+  );
+  const ok = checkRun(taskDir);
+  assert.deepEqual(ok.errors, []);
+  assert.deepEqual(ok.strikes, []);
+
+  // gate-design done without approvedBy
+  const noApprove = validRun();
+  (noApprove.steps as Record<string, Record<string, unknown>>)['gate-design'] = { status: 'done', attempts: 1 };
+  writeRun(noApprove);
+  const gateRes = checkRun(taskDir);
+  assert.ok(gateRes.errors.some((e) => e.includes('approvedBy')));
+
+  // step done whose need is pending
+  const unmetNeed = validRun();
+  (unmetNeed.steps as Record<string, Record<string, unknown>>)['design-review'] = { status: 'pending', attempts: 0 };
+  writeRun(unmetNeed);
+  assert.ok(checkRun(taskDir).errors.length > 0);
+
+  // unknown step id in run.json
+  const unknownStep = validRun();
+  (unknownStep.steps as Record<string, Record<string, unknown>>)['bogus-step'] = { status: 'pending', attempts: 0 };
+  writeRun(unknownStep);
+  assert.ok(checkRun(taskDir).errors.length > 0);
+
+  // board line with TYPE BLOCKER -> error; same line with (strike: <reason>) -> strike, no error
+  writeRun(validRun());
+  writeBoard('[design] tech-lead → all: BLOCKER missing spec\n');
+  const blockerRes = checkRun(taskDir);
+  assert.equal(blockerRes.errors.length, 1);
+  assert.equal(blockerRes.strikes.length, 0);
+
+  writeBoard('[design] tech-lead → all: BLOCKER missing spec (strike: unknown TYPE)\n');
+  const strikeRes = checkRun(taskDir);
+  assert.equal(strikeRes.errors.length, 0);
+  assert.equal(strikeRes.strikes.length, 1);
+
+  // valid normalized line marked with strike -> 0 errors and 1 strike
+  writeBoard('[design-review] backend → tech-lead: QUESTION #5 regression tests (strike: recipient normalized)\n');
+  const normalizedStrikeRes = checkRun(taskDir);
+  assert.equal(normalizedStrikeRes.errors.length, 0);
+  assert.equal(normalizedStrikeRes.strikes.length, 1);
+
+  // valid line containing plain words "1 strike" (no marker) -> 0 errors, 0 strikes
+  writeBoard('[gate-design] tech-lead → user: DECISION approved with 1 strike (#mobile-5)\n');
+  const plainStrikeRes = checkRun(taskDir);
+  assert.equal(plainStrikeRes.errors.length, 0);
+  assert.equal(plainStrikeRes.strikes.length, 0);
+
+  // unknown recipient qa -> error
+  writeBoard('[design] tech-lead → qa: HANDOFF ready\n');
+  const qaRes = checkRun(taskDir);
+  assert.equal(qaRes.errors.length, 1);
+  assert.ok(qaRes.errors.some((e) => e.includes('qa')));
+});
+
+test('CLI --check-run exits 0 on a valid run and 1 on errors; parseArgs requires a dir', () => {
+  assert.throws(() => parseArgs(['--check-run']), /--check-run requires a task directory/);
+  assert.throws(() => parseArgs(['--check-run', '--doctor']), /--check-run requires a task directory/);
+  assert.equal(parseArgs(['--check-run', 'some/dir']).checkRun, 'some/dir');
+
+  const proj = makeTempDir('sdlc-kit-cli-check-');
+  const taskDir = path.join(proj, '.claude', 'tasks', 't');
+  fs.mkdirSync(taskDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(taskDir, 'run.json'),
+    JSON.stringify({
+      workflow: 'feature',
+      steps: {
+        clarify: { status: 'done', attempts: 1 },
+        design: { status: 'done', attempts: 1 },
+        'design-review': { status: 'done', attempts: 1 },
+        'gate-design': { status: 'done', attempts: 1, approvedBy: 'user' },
+      },
+    }),
+  );
+
+  const cliPath = path.join(DEFAULT_PACKAGE_ROOT, 'dist/bin/cli.js');
+  const out = execFileSync(process.execPath, [cliPath, '--check-run', taskDir], { encoding: 'utf8' });
+  assert.ok(out.includes('sdlc-kit --check-run'));
+  assert.ok(out.includes('Summary: 0 error(s), 0 strike(s)'));
+
+  fs.writeFileSync(
+    path.join(taskDir, 'run.json'),
+    JSON.stringify({
+      workflow: 'feature',
+      steps: {
+        clarify: { status: 'done', attempts: 1 },
+        design: { status: 'done', attempts: 1 },
+        'design-review': { status: 'done', attempts: 1 },
+        'gate-design': { status: 'done', attempts: 1 },
+      },
+    }),
+  );
+  assert.throws(
+    () => execFileSync(process.execPath, [cliPath, '--check-run', taskDir], { stdio: 'pipe' }),
+    (err: NodeJS.ErrnoException & { status?: number }) => err.status === 1,
+  );
 });

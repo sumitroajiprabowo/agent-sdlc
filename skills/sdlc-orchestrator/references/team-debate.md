@@ -36,7 +36,7 @@ Supplements `team-protocol.md` with pre-implementation design review, bounded de
 ## Live Threads
 
 - **Session per role per run**: on a role's first dispatch the lead records its session in `run.json` `sessions` (id captured from the first run's output for every CLI); later dispatches of that role resume it instead of starting fresh.
-- **Immediate relay**: when a report has a `QUESTION`/`OBJECTION` to a peer, the lead resumes the recipient's session at once with the original line verbatim, then resumes the asker's session with the reply; repeat until the thread closes (max 2 rounds, as in Threads); every turn goes to `board.md` verbatim.
+- **Immediate relay**: when a report has a `QUESTION`/`OBJECTION` to a peer, the lead resumes the recipient's session at once with the original line verbatim, then resumes the asker's session with the reply; repeat until the thread closes (max 2 rounds, as in Threads); every turn goes to `board.md` as `[live-thread] <from> → <to>: <TYPE> <text>` (enum TYPE; the relay itself is not logged as a separate line).
 - **Mode preserved**: a resumed role keeps its mode—read-only stays read-only; a write role resumed for a question is told "answer only, do not edit".
 - **Fallback**: if resume fails (unknown/expired session) or setup's probe shows the CLI cannot resume, dispatch a fresh session with the thread lines inlined and note it on the board.
 
@@ -50,7 +50,7 @@ Allowed to: exactly one role from the roster, or all
 Line format: - to: <role|all> | <TYPE> | <text>
 ```
 
-- **Enforcement**: a message with an unknown `TYPE` or recipient is a **strike**. The lead normalizes it (per `team-protocol.md` Normalize messages) and records `strike` on the board line.
+- **Enforcement**: a message with an unknown `TYPE` or recipient is a **strike**. The lead normalizes it (per `team-protocol.md` Normalize messages) and appends `(strike: <reason>)` to the board line.
 - `CONTRACT` from any role other than `tech-lead` must be addressed to `tech-lead` (otherwise it is a **strike** and is re-routed); a report whose status line is not exactly `Status: <VALUE>` at line start is a **strike**.
 - Two strikes in one report make that report invalid → rerun the step once with the enum restated (counts toward the circuit breaker).
 - Review/QA findings use `OBJECTION` (not `BLOCKER`).

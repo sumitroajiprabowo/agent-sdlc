@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-28
+
+### Added
+- `--check-run <dir>` validator (`lib/check-run.ts`): validates `run.json` schema, step `needs` dependencies, user-only gate approval (`approvedBy: "user"`), `sessions`, `sendbacks`, and `board.md` line format, message `TYPE` enum, roster membership, and strikes.
+
+### Changed
+- Gates in `team-protocol.md` now run `npx sdlc-kit --check-run .claude/tasks/<slug>` and fix every error before presenting a gate.
+- Live-thread `board.md` lines in `team-debate.md` now use `[live-thread] <from> → <to>: <TYPE> <text>` with the message `TYPE` enum.
+- `run.json` example in `team-protocol.md` documents `"approvedBy": "user (gates only)"`.
+
 ## [0.8.1] - 2026-11-28
 
 ### Fixed
