@@ -48,3 +48,4 @@ Every worker must reply using this compact format:
 - To run each SDLC role on its own CLI and model (e.g. `claude`, `codex`, `agy`, `opencode`) in isolated git worktrees, use `/sdlc-start-orchestration`.
 - Load `references/team-dispatch.md` for the role catalog, `~/.sdlc-kit/team.json` / `.sdlc/team.json` schema, headless invocations, and safety rules.
 - Load `references/team-protocol.md`, `references/team-debate.md`, and `references/workflows/` for the file-based message board, design review, debate threads, dissent, message enum, shared `contracts/`, workflow gates with send back, and `resume <slug>`.
+- Before every gate run `npx sdlc-kit --check-run .claude/tasks/<slug>` and fix all errors; roles keep per-run sessions in `run.json` so live threads and `resume <slug>` reuse them.

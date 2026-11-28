@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2026-11-28
+
+### Changed
+- **README Multi-model team**: lists all 8 roles with access levels and separation of duties (`reviewer` and `security` must not share a CLI+model with any write role).
+- **README Run lifecycle**: replaced prose with a concise bullet list covering board/contracts routing, workflows, design review and dissent, live threads, `--check-run` gates, and session reuse on resume.
+- **README Included Playbooks & Docs**: added links to `skills/sdlc-orchestrator/references/` (`team-protocol.md`, `team-dispatch.md`, `team-debate.md`, `workflows/`).
+- **README Troubleshooting**: added headless `agy` file-read and tier-suffixed model effort guidance.
+- **README Development & Tests**: added `npm run typecheck`, CLI smoke check, and `npm pack --dry-run`.
+- **`sdlc-orchestrator/SKILL.md` and `/sdlc-start-orchestration`**: documented running `--check-run` before gates and reusing recorded `sessions` from `run.json` on resume.
+- **`CONTRIBUTING.md`**: documented orchestration reference line limits (`<=120`/`<=90`/`<=60`) and `lib/check-run.ts` upkeep.
+
 ## [0.9.1] - 2026-11-28
 
 ### Fixed

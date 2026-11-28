@@ -139,13 +139,18 @@ npx skills add sumitroajiprabowo/sdlc-kit
 
 Run each SDLC role on its own CLI and model across isolated git worktrees:
 
-| Role | CLI | Model |
-|---|---|---|
-| `tech-lead` | `claude` | `claude-opus-5-5` |
-| `backend` | `agy` | `gemini-4-neon-medium` |
-| `frontend` | `codex` | `gpt-6.2-sol` |
-| `mobile` | `agy` | `gemini-4-neon-medium` |
-| `qa` | `opencode` | `opencode/deepseek-v4.1-flash-free` |
+| Role | CLI | Model | Access |
+|---|---|---|---|
+| `tech-lead` | `claude` | `claude-opus-5-5` | lead branch / integration |
+| `backend` | `agy` | `gemini-4-neon-medium` | write (owned paths) |
+| `frontend` | `codex` | `gpt-6.2-sol` | write (owned paths) |
+| `mobile` (disabled by default) | `agy` | `gemini-4-neon-medium` | write (owned paths) |
+| `qa` | `opencode` | `opencode/deepseek-v4.1-flash-free` | test files only |
+| `security` | `claude` | `claude-opus-5-5` | read-only |
+| `devops` | `agy` | `gemini-4-neon-medium` | infra paths |
+| `reviewer` | `claude` | `claude-opus-5-5` | read-only |
+
+`reviewer` and `security` must not share a CLI+model with any write role (separation of duties; setup warns).
 
 ```bash
 /sdlc-start-orchestration setup
@@ -154,13 +159,15 @@ Run each SDLC role on its own CLI and model across isolated git worktrees:
 
 Configs live in global `~/.sdlc-kit/team.json` and per-project `.sdlc/team.json` (overrides per role). See [team-dispatch.md](skills/sdlc-orchestrator/references/team-dispatch.md) for the full role catalog and headless invocations.
 
-Roles communicate only through the lead via `.claude/tasks/<slug>/board.md` and shared `contracts/` (such as `api.md`, `events.md`, `schema.md`).
-Built-in workflows (`feature`, `bugfix`) run agent, script, and human `gate` steps in dependency order, pausing at gates to approve, rerun with context, or send back to an earlier step.
-Run state is saved in `run.json`, so an interrupted run can continue with `/sdlc-start-orchestration resume <slug>`.
-Override or add project workflows in `.sdlc/workflows/<name>.json` and run them with `workflow=<name>`.
-Before `gate-design`, a parallel `design-review` panel critiques `contracts/api.md` using bounded debate threads, a strict message enum, and non-blocking `DISSENT` surfaced at gates (see [team-debate.md](skills/sdlc-orchestrator/references/team-debate.md)).
-Roles keep a per-run session in `run.json` so peer `QUESTION`/`OBJECTION` threads resume live instead of waiting for the next wave.
-Before presenting a gate, validate the run workspace with `npx sdlc-kit --check-run .claude/tasks/<slug>` to check `run.json` and `board.md` against the workflow and roster.
+**Run lifecycle**
+
+- **Board & contracts**: roles communicate only through the lead via `.claude/tasks/<slug>/board.md` and shared `contracts/` (such as `api.md`, `events.md`, `schema.md`).
+- **Workflows**: built-in `feature` and `bugfix` graphs run agent, script, and human `gate` steps in dependency order; override or add project workflows in `.sdlc/workflows/<name>.json` and run with `workflow=<name>`.
+- **Design review & debate**: before `gate-design`, a parallel `design-review` panel critiques `contracts/api.md` using bounded debate threads, a strict message enum, and non-blocking `DISSENT` surfaced at gates (see [team-debate.md](skills/sdlc-orchestrator/references/team-debate.md)).
+- **Live threads**: roles keep per-run sessions in `run.json` so peer `QUESTION`/`OBJECTION` threads resume live instead of waiting for the next wave.
+- **Gates**: before presenting a gate, run `npx sdlc-kit --check-run .claude/tasks/<slug>`, fix every error, and list open `DISSENT`; only the user approves (`approvedBy: "user"`), reruns with context, or sends back to an earlier step.
+- **Resume**: run state is saved in `run.json`, so `/sdlc-start-orchestration resume <slug>` continues from the next incomplete step and reuses recorded sessions.
+
 See [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) for the board format, routing rules, and workflow schema.
 
 ---
@@ -177,7 +184,11 @@ See [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) for
   - [database-hygiene.md](skills/sdlc-workflow/references/database-hygiene.md) — Query plans, lock-safe migrations, pooling, short transactions, backups
   - [incident-response.md](skills/sdlc-workflow/references/incident-response.md) — SEV1–SEV4 tiers, 5-minute mitigation rule, comms, post-mortems
   - [developer-habits.md](skills/sdlc-workflow/references/developer-habits.md) — Observability, blameless post-mortems, code deletion, tech debt budget, DoD
-- **[sdlc-orchestrator](skills/sdlc-orchestrator/SKILL.md)** — Token-safe multi-agent briefing & handoff protocol
+- **[sdlc-orchestrator](skills/sdlc-orchestrator/SKILL.md)** — Token-safe multi-agent briefing & handoff protocol:
+  - [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) — Board format, routing, gates, `run.json`, resume
+  - [team-dispatch.md](skills/sdlc-orchestrator/references/team-dispatch.md) — Role catalog, roster, model probe, headless CLI invocations, report extraction
+  - [team-debate.md](skills/sdlc-orchestrator/references/team-debate.md) — Design review, threads, dissent, live threads, message enum
+  - [workflows/](skills/sdlc-orchestrator/references/workflows/) — Built-in `feature` and `bugfix` step graphs
 - **[CHANGELOG.md](CHANGELOG.md)** & **[CONTRIBUTING.md](CONTRIBUTING.md)**
 
 ---
@@ -203,6 +214,8 @@ Every installed file is recorded with a hash in `~/.sdlc-kit/manifest.json`. The
 - **Skills load twice**: you have both the Claude plugin and `npx --claude`. `--doctor` flags this; remove one with `npx sdlc-kit --claude --uninstall`.
 - **Uninstall left a file**: it was edited after install. Delete it manually or use `--uninstall --force`.
 - **Windows, macOS, Linux**: all three are tested in CI on Node 20 and 22. The installer and the `--optimize` statusline need only Node.js (no `bash` or `jq`). Paths use your home directory (`%USERPROFILE%` on Windows). The Cursor and OpenCode directories are unverified on Windows.
+- **Headless `agy` denies file reads**: inline the needed files in the brief. For read-only roles add "do not call any tool; answer from the inlined text". Never use permission-bypass flags.
+- **`agy` "invalid model selection"**: tier-suffixed models (`-low`/`-medium`/`-high`) already fix the effort. Omit `--effort` or pass the matching value.
 - **Requires Node.js >=20.**
 
 ## Verifying the token savings yourself
@@ -212,8 +225,11 @@ No benchmark numbers are published; measure on your own setup. In Claude Code ru
 ## Development & Tests
 
 ```bash
-npm test                       # Node >=20, runs in temp dirs only
-node dist/bin/cli.js --dry-run --all   # after `npm ci && npm run build`; previews an install without writing
+npm run typecheck
+node dist/bin/cli.js --help && node dist/bin/cli.js --doctor  # CLI smoke
+npm pack --dry-run                                            # package contents
+npm test                                                      # Node >=20, runs in temp dirs only
+node dist/bin/cli.js --dry-run --all                          # after `npm ci && npm run build`; previews an install without writing
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
