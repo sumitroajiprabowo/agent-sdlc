@@ -82,7 +82,7 @@ When a `gate` step is reached, set its status to `waiting-gate`, present the pro
 
 ## Resume
 
-Running `resume <slug>` reads `.claude/tasks/<slug>/run.json` and continues from the first step whose status is not `done`.
+Running `resume <slug>` reads `.claude/tasks/<slug>/run.json` and continues from the first step whose status is not `done`, and reuses the role sessions in `sessions` (if a resume fails, see `team-debate.md` Live Threads Fallback).
 
 ## Owner Routing
 

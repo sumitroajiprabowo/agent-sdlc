@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-11-28
+
+### Fixed
+- Setup **Model probe** in `team-dispatch.md` now checks each CLI's resume flag in `--help` and records `resume: false` in the roster when missing (closing the gap where `team-debate.md` Fallback referenced an undocumented probe).
+- `resume <slug>` in `team-protocol.md` now reuses recorded role sessions in `sessions` (with fallback to `team-debate.md` Live Threads Fallback on failure).
+
 ## [0.8.0] - 2026-11-28
 
 ### Added

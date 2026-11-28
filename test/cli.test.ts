@@ -805,6 +805,8 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'sandbox_mode',
     '--session',
     'sessionID',
+    'resume flag',
+    'resume: false',
   ]) {
     assert.ok(ref.includes(snippet), `team-dispatch.md missing "${snippet}"`);
   }
@@ -837,6 +839,7 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'team-debate.md',
     'only the user approves',
     '"sessions"',
+    'reuses the role sessions',
   ]) {
     assert.ok(protocol.includes(snippet), `team-protocol.md missing "${snippet}"`);
   }
