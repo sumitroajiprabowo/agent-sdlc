@@ -809,6 +809,8 @@ test('sdlc-start-orchestration command and team-dispatch reference are complete 
     'sessionID',
     'resume flag',
     'resume: false',
+    '--effort',
+    '`Status:` to open the final report block',
   ]) {
     assert.ok(ref.includes(snippet), `team-dispatch.md missing "${snippet}"`);
   }

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-28
+
+### Fixed
+- **Model probe** in `team-dispatch.md` now notes that tier-suffixed `agy` models (`-low`/`-medium`/`-high`) already fix the effort, so callers must omit `--effort` or pass the matching value to avoid an "invalid model selection" error.
+- **Report extraction** in `team-dispatch.md` now requires `Status:` to open the final report block and instructs keeping from the artifact's heading (and saving the artifact separately) when a worker prints its artifact before `Status:`.
+
 ## [0.9.0] - 2026-11-28
 
 ### Added
