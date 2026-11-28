@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { checkRun } from '../lib/check-run.js';
 import { DEFAULT_PACKAGE_ROOT, parseArgs, runDoctor, runInstall } from '../lib/installer.js';
 
 const HELP_TEXT = `sdlc-kit — SDLC skills, slash commands & multi-agent orchestrator protocol
@@ -23,6 +24,7 @@ Targets (auto-detected if omitted):
 Options:
   --optimize          (With --claude) Add opusplan, 200k cap, tool search & statusline (ctx %, cost, tokens) to ~/.claude/settings.json (keeps your existing values)
   --doctor            Run a read-only health & token-efficiency audit
+  --check-run <dir>   Validate an orchestration run (run.json + board.md)
   --no-orchestrator   Skip installing the multi-agent sdlc-orchestrator skill
   --dry-run           Preview planned changes without writing files
   --uninstall         Remove sdlc-kit managed files from selected targets (skips files you edited)
@@ -60,6 +62,22 @@ function main() {
       console.log(`  [${c.level}] ${c.area}: ${c.message}`);
     }
     console.log(`Summary: ${report.okCount} ok, ${report.warnCount} warning(s)`);
+    return;
+  }
+
+  if (parsed.checkRun) {
+    const report = checkRun(path.resolve(parsed.checkRun));
+    console.log(`sdlc-kit --check-run ${parsed.checkRun}`);
+    for (const err of report.errors) {
+      console.log(`  [ERROR] ${err}`);
+    }
+    for (const strike of report.strikes) {
+      console.log(`  [STRIKE] ${strike}`);
+    }
+    console.log(`Summary: ${report.errors.length} error(s), ${report.strikes.length} strike(s)`);
+    if (report.errors.length > 0) {
+      process.exitCode = 1;
+    }
     return;
   }
 

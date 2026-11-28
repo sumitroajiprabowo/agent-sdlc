@@ -26,6 +26,7 @@ export interface InstallerOptions {
   dryRun: boolean;
   uninstall: boolean;
   doctor: boolean;
+  checkRun?: string;
   force: boolean;
   help: boolean;
   version: boolean;
@@ -198,11 +199,13 @@ export function parseArgs(argv: string[]): InstallerOptions {
   let dryRun = false;
   let uninstall = false;
   let doctor = false;
+  let checkRun: string | undefined;
   let force = false;
   let help = false;
   let version = false;
 
-  for (const arg of argv) {
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
     switch (arg) {
       case '--claude':
         targets.add('claude');
@@ -248,6 +251,14 @@ export function parseArgs(argv: string[]): InstallerOptions {
       case '--doctor':
         doctor = true;
         break;
+      case '--check-run': {
+        const dir = argv[++i];
+        if (!dir || dir.startsWith('--')) {
+          throw new Error('--check-run requires a task directory');
+        }
+        checkRun = dir;
+        break;
+      }
       case '--force':
         force = true;
         break;
@@ -271,6 +282,7 @@ export function parseArgs(argv: string[]): InstallerOptions {
     dryRun,
     uninstall,
     doctor,
+    ...(checkRun !== undefined ? { checkRun } : {}),
     force,
     help,
     version,

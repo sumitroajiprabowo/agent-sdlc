@@ -104,6 +104,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 | `--all` | Install across `claude`, `codex`, `antigravity`, `cursor`, `opencode`, and `local` |
 | `--optimize` | With `--claude`: backs up `~/.claude/settings.json` (the original `.bak` is never overwritten), then adds only the keys you haven't set: `opusplan` model, 200k context cap, tool search, auto-compact at 70%, bounded outputs, and a statusline showing context %, session cost, and token counts. Run `--claude --uninstall` to revert just those keys |
 | `--doctor` | Run a read-only health & token-efficiency audit |
+| `--check-run <dir>` | Validate an orchestration run (`run.json` + `board.md`) against the workflow and roster |
 | `--no-orchestrator` | Skip installing `sdlc-orchestrator` (single-agent workflow only) |
 | `--dry-run` | Preview actions without writing any files |
 | `--force` | Overwrite or remove files even if they were not installed (or were edited after install) |
@@ -159,6 +160,7 @@ Run state is saved in `run.json`, so an interrupted run can continue with `/sdlc
 Override or add project workflows in `.sdlc/workflows/<name>.json` and run them with `workflow=<name>`.
 Before `gate-design`, a parallel `design-review` panel critiques `contracts/api.md` using bounded debate threads, a strict message enum, and non-blocking `DISSENT` surfaced at gates (see [team-debate.md](skills/sdlc-orchestrator/references/team-debate.md)).
 Roles keep a per-run session in `run.json` so peer `QUESTION`/`OBJECTION` threads resume live instead of waiting for the next wave.
+Before presenting a gate, validate the run workspace with `npx sdlc-kit --check-run .claude/tasks/<slug>` to check `run.json` and `board.md` against the workflow and roster.
 See [team-protocol.md](skills/sdlc-orchestrator/references/team-protocol.md) for the board format, routing rules, and workflow schema.
 
 ---
