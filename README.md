@@ -10,7 +10,7 @@
 [![node](https://img.shields.io/node/v/sdlc-kit)](package.json)
 ![dependencies](https://img.shields.io/badge/runtime%20deps-0-brightgreen)
 
-<img src="assets/demo.svg" alt="sdlc-kit demo: install, then spec, start, review, qa and ship" width="760">
+<img src="assets/demo.svg" alt="sdlc-kit demo: install, spec, start, review, qa and ship, then a multi-model orchestration run" width="760">
 
 `npx sdlc-kit` · works with Claude Code, Codex, Antigravity, Cursor, OpenCode and local LLMs
 
@@ -24,12 +24,12 @@ Skills, slash commands, and a multi-agent handoff protocol for an end-to-end SDL
 
 Long sessions, bloated global instructions, full test logs, and whole chat histories passed between subagents all burn tokens. This package keeps the always-loaded part small and moves the detail into files that load only when needed:
 
-- **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 8 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
+- **Small baseline**: each skill loads only its YAML frontmatter up front; the full playbook and its 9 `references/` load when the task calls for them. Slash commands load their one-line description until you invoke them.
 - **2 subagents** (Claude Code): `sdlc-reviewer` and `sdlc-tester`, independent read-only review and QA used by size M/L tasks.
 - **10 slash commands**: `/sdlc-spec`, `/sdlc-start`, `/sdlc-handoff`, `/sdlc-pickup`, `/sdlc-handoff-pr`, `/sdlc-adr`, `/sdlc-qa`, `/sdlc-review`, `/sdlc-ship`, `/sdlc-start-orchestration`.
 - **Covers repo setup to production**: milestone slicing, 5-state frontend checklist, QA pyramid, bugfix vs production hotfix, CI/CD, and Expand & Contract database migrations.
 - **Size routing, spec gates, and resumable state**: `/sdlc-start` classifies tasks as S/M/L, `/sdlc-spec` pauses at an explicit approval gate before issue breakdown, and `.claude/HANDOFF.md` (`Task | Stage | Size`) plus gitignored `.claude/tasks/<slug>/` artifacts resume cleanly across `/clear`.
-- **Orchestrator protocol**: fresh-context worker briefings and worker reports under 30 lines.
+- **Orchestrator protocol**: fresh-context worker briefings and worker reports under 30 lines, plus `/sdlc-start-orchestration` runs each role (tech-lead, backend, frontend, mobile, qa, security, devops, reviewer) on its own CLI/model in git worktrees, with a design-review panel, user-only gates, and `--check-run` validation (see [Multi-model team](#multi-model-team)).
 
 ---
 
@@ -118,6 +118,7 @@ npx skills add sumitroajiprabowo/sdlc-kit
 [0] Repo Setup   -> Thin AGENTS.md/CLAUDE.md (<4 KB) + docs/INDEX.md + path-scoped rules
 [1] Plan         -> /sdlc-spec (big features, approval gate) -> /sdlc-start #123 (size S/M/L; 1 Issue = 1 PR)
 [2] Code         -> Planner designs -> Executor codes + targeted tests
+[2b] Team        -> /sdlc-start-orchestration "<task>": roles on own CLI/model, design-review, gates (check-run first)
 [3] Handoff      -> ctx >=70%: /sdlc-handoff -> /clear -> /sdlc-pickup   (team: /sdlc-handoff-pr)
                     HANDOFF.md keeps `Task | Stage | Size`; artifacts live in .claude/tasks/<slug>/
 [4] Ship & QA    -> (S: tests only) /sdlc-qa -> /sdlc-review -> /sdlc-ship -> CI gate -> SemVer release -> Prod
